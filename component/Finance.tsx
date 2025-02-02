@@ -9,7 +9,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { db, auth } from "@/utils/firebaseConfig"; // Import Firebase config and auth
+import { db } from "@/utils/firebaseConfig"; // Import Firebase config and auth
 import {
   collection,
   addDoc,
@@ -20,7 +20,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
+
 import useStore from "@/hooks/store";
 
 // Define the shape of each item
@@ -34,14 +34,14 @@ interface Item {
 }
 
 // Custom hook for Firebase operations
-const useFirebaseItems = (userId: string | null) => {
+const useFirebaseItems = () => {
   const [items, setItems] = useState<Item[]>([]);
   const itemsCollection = collection(db, "finance");
 
   const activeLibrary = useStore((state: any) => state.activeLibrary);
   const currentUser = useStore((state: any) => state.currentUser);
 
-  const fetchItems = async (uid: string) => {
+  const fetchItems = async () => {
     try {
       const q = query(itemsCollection, where("userId", "==", currentUser.uid), where("libraryId", "==", activeLibrary.id));
       const querySnapshot = await getDocs(q);
@@ -91,10 +91,10 @@ const useFirebaseItems = (userId: string | null) => {
   };
 
   useEffect(() => {
-    if (userId) {
-      fetchItems(userId);
-    }
-  }, [userId]);
+   
+      fetchItems();
+    
+  }, []);
 
   return { items, addItem, updateItem, deleteItem };
 };
@@ -106,19 +106,9 @@ const Finance: React.FC = () => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
-  const { items, addItem, updateItem, deleteItem } = useFirebaseItems(userId);
+  const { items, addItem, updateItem, deleteItem } = useFirebaseItems();
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUserId(user.uid);
-      } else {
-        setUserId(null);
-      }
-    });
-
-    return unsubscribe; // Unsubscribe from the auth listener
-  }, []);
+ 
 
   const handleAddOrUpdate = async () => {
     if (!description || !amount) {
@@ -162,7 +152,7 @@ const Finance: React.FC = () => {
     ]);
   };
 
-  const calculateTotal = (): number => {
+const calculateTotal = (): number => {
     return items.reduce(
       (acc, item) => (item.type === "Earning" ? acc + item.amount : acc - item.amount),
       0

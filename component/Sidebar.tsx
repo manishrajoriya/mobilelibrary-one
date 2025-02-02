@@ -261,7 +261,8 @@ const Sidebar = () => {
           color: "#555",
           marginLeft: 10,
         },
-        drawerActiveBackgroundColor: "#6B46C110",
+         drawerActiveBackgroundColor: "#6B46C110",
+         
         drawerActiveTintColor: "#6B46C1",
         drawerInactiveTintColor: "#555",
         drawerItemStyle: {

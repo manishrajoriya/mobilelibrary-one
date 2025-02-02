@@ -6,10 +6,7 @@ import useStore from '@/hooks/store'
 
 
 const index = () => {
-//  const currentUser = useStore((state: any) => state.currentUser);
-//  console.log("currentUser", currentUser);
- const activeLibrary = useStore((state: any) => state.activeLibrary);
-  console.log("currentLibrary", activeLibrary);
+
   return (
     <Finance />
   )

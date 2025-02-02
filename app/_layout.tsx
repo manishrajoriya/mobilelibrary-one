@@ -14,6 +14,7 @@ export default function RootLayout() {
       <Stack.Screen name="addMemberForm" />
       <Stack.Screen name="finance" />
       <Stack.Screen name="memberPaymemt" />
+      <Stack.Screen name="onbording" />
     </Stack>
   )
 }
