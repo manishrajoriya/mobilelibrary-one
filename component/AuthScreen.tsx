@@ -13,10 +13,11 @@ export default function LoginScreen() {
   const [isLogin, setIsLogin] = useState(true)
   const router = useRouter()
   const setCurrentUser = useStore((state: any) => state.setCurrentUser);
+ 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setCurrentUser(user)
-      if (user) {
+      if (user ) {
         router.push("/(tabs)")
       }
     })

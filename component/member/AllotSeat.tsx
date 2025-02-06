@@ -44,9 +44,13 @@ const AllocateSeatsPage: React.FC = () => {
   const [hasMoreMembers, setHasMoreMembers] = useState<boolean>(true)
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [selectedSeatData, setSelectedSeatData] = useState<Seat | null>(null)
+console.log("selectedSeatData",selectedSeatData);
+console.log('selectedmember',selectedMember);
 
-  const currentUser = useStore((state: any) => state.currentUser);
-  const activeLibrary = useStore((state: any) => state.activeLibrary);
+
+
+  const currentUser = useStore((state: any) => state.currentUser)
+  const activeLibrary = useStore((state: any) => state.activeLibrary)
 
   useEffect(() => {
     loadSeats()
@@ -77,7 +81,7 @@ const AllocateSeatsPage: React.FC = () => {
   }
 
   const loadMembers = useCallback(async () => {
-    if (!hasMoreMembers) return
+    if (!hasMoreMembers || loading) return
 
     setLoading(true)
     try {
@@ -85,7 +89,12 @@ const AllocateSeatsPage: React.FC = () => {
         members: fetchedMembers,
         lastVisibleDoc: newLastVisibleDoc,
         hasMore,
-      } = await getMembers({ pageSize: 10, lastVisible: lastVisibleDoc, currentUser: currentUser, libraryId: activeLibrary.id })
+      } = await getMembers({
+        pageSize: 10,
+        lastVisible: lastVisibleDoc,
+        currentUser: currentUser,
+        libraryId: activeLibrary.id,
+      })
 
       setMembers((prevMembers) => {
         const newMembers = fetchedMembers.filter(
@@ -101,7 +110,12 @@ const AllocateSeatsPage: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }, [lastVisibleDoc, hasMoreMembers])
+  }, [lastVisibleDoc, hasMoreMembers, loading, currentUser, activeLibrary.id])
+
+  const isMemberExpired = useCallback((expiryDate: Date) => {
+    console.log(expiryDate);
+    return new Date(expiryDate) < new Date()
+  }, [])
 
   const handleAllotSeat = async () => {
     if (!selectedSeat || !selectedMember) {
@@ -109,14 +123,12 @@ const AllocateSeatsPage: React.FC = () => {
       return
     }
 
-    // Check if the seat is already allocated
     const seatToAllocate = seats.find((seat) => seat.id === selectedSeat)
     if (seatToAllocate && seatToAllocate.isAllocated) {
       Alert.alert("Error", "This seat is already allocated. Please choose another seat.")
       return
     }
 
-    // Check if the member is expired
     if (isMemberExpired(selectedMember.expiryDate)) {
       Alert.alert("Error", "Cannot allocate seat to an expired member.")
       return
@@ -124,11 +136,16 @@ const AllocateSeatsPage: React.FC = () => {
 
     setLoading(true)
     try {
-      const result = await allotSeat(selectedSeat, selectedMember.id, selectedMember.fullName, selectedMember.expiryDate)
+      const result = await allotSeat(
+        selectedSeat,
+        selectedMember.id,
+        selectedMember.fullName,
+        selectedMember.expiryDate,
+      )
       Alert.alert("Success", result)
+
       await loadSeats()
 
-      // Update the member's allocatedSeatId
       setMembers((prevMembers) =>
         prevMembers.map((member) =>
           member.id === selectedMember.id ? { ...member, allocatedSeatId: selectedSeat } : member,
@@ -138,7 +155,7 @@ const AllocateSeatsPage: React.FC = () => {
       setSelectedSeat(null)
       setSelectedMember(null)
       setSelectedSeatData(null)
-       triggerAnimation()
+      triggerAnimation()
     } catch (error) {
       Alert.alert("Error: Something went wrong")
     } finally {
@@ -153,7 +170,6 @@ const AllocateSeatsPage: React.FC = () => {
       Alert.alert("Success", result)
       await loadSeats()
 
-      // Remove the allocatedSeatId from the member
       setMembers((prevMembers) =>
         prevMembers.map((member) =>
           member.allocatedSeatId === seatId ? { ...member, allocatedSeatId: undefined } : member,
@@ -194,65 +210,67 @@ const AllocateSeatsPage: React.FC = () => {
     ],
   }
 
-  const isMemberExpired = (expiryDate: Date) => {
-    return new Date(expiryDate) < new Date()
-  }
-
-  const renderSeat = ({ item }: { item: Seat }) => (
-    <Animated.View style={[styles.seatItem, animatedStyle]}>
-      <TouchableOpacity
-        style={[styles.seatContent, selectedSeat === item.id && styles.selectedSeatItem]}
-        onPress={() => {
-          setSelectedSeat(item.id)
-          setSelectedSeatData(item)
-        }}
-      >
-        <MaterialIcons
-          name={item.isAllocated ? "event-seat" : "chair"}
-          size={24}
-          color={item.isAllocated ? (isMemberExpired(item.memberExpiryDate!) ? "orange" : "red") : "green"}
-        />
-        <Text style={styles.seatText}>{item.seatId}</Text>
-        {item.isAllocated ? (
-          <View style={styles.allocatedInfo}>
-            <Text style={styles.allocatedText}>Allocated</Text>
-            <Text style={styles.memberNameText}>{item.memberName}</Text>
-            <Text
-              style={[
-                styles.statusText,
-                isMemberExpired(item.memberExpiryDate!) ? styles.expiredStatus : styles.liveStatus,
-              ]}
-            >
-              {isMemberExpired(item.memberExpiryDate!) ? "Expired" : "Live"}
-            </Text>
-          </View>
-        ) : (
-          <Text style={styles.availableText}>Available</Text>
-        )}
-      </TouchableOpacity>
-    </Animated.View>
+  const renderSeat = useCallback(
+    ({ item }: { item: Seat }) => (
+      <Animated.View style={[styles.seatItem, animatedStyle]}>
+        <TouchableOpacity
+          style={[styles.seatContent, selectedSeat === item.id && styles.selectedSeatItem]}
+          onPress={() => {
+            setSelectedSeat(item.id)
+            setSelectedSeatData(item)
+          }}
+        >
+          <MaterialIcons
+            name={item.isAllocated ? "event-seat" : "chair"}
+            size={24}
+            color={item.isAllocated ? (isMemberExpired(item.memberExpiryDate!) ? "orange" : "red") : "green"}
+          />
+          <Text style={styles.seatText}>{item.seatId}</Text>
+          {item.isAllocated ? (
+            <View style={styles.allocatedInfo}>
+              <Text style={styles.allocatedText}>Allocated</Text>
+              <Text style={styles.memberNameText}>{item.memberName}</Text>
+              <Text
+                style={[
+                  styles.statusText,
+                  isMemberExpired(item.memberExpiryDate!) ? styles.expiredStatus : styles.liveStatus,
+                ]}
+              >
+                {isMemberExpired(item.memberExpiryDate!) ? "Expired" : "Live"}
+              </Text>
+            </View>
+          ) : (
+            <Text style={styles.availableText}>Available</Text>
+          )}
+        </TouchableOpacity>
+      </Animated.View>
+    ),
+    [selectedSeat, isMemberExpired],
   )
 
-  const renderMember = ({ item }: { item: Member }) => {
-    const isExpired = isMemberExpired(item.expiryDate)
-    return (
-      <TouchableOpacity
-        style={[
-          styles.memberItem,
-          selectedMember?.id === item.id && styles.selectedMemberItem,
-          isExpired && styles.expiredMemberItem,
-        ]}
-        onPress={() => setSelectedMember(item)}
-        disabled={item.allocatedSeatId !== undefined || isExpired} // Disable if member already has a seat or is expired
-      >
-        <Text style={[styles.memberText, isExpired && styles.expiredMemberText]}>{item.fullName}</Text>
-        <Text style={[styles.statusText, isExpired ? styles.expiredStatus : styles.liveStatus]}>
-          {isExpired ? "Expired" : "Live"}
-        </Text>
-        {item.allocatedSeatId && <Text style={styles.allocatedSeatText}>Seat: {item.allocatedSeatId}</Text>}
-      </TouchableOpacity>
-    )
-  }
+  const renderMember = useCallback(
+    ({ item }: { item: Member }) => {
+      const isExpired = isMemberExpired(item.expiryDate)
+      return (
+        <TouchableOpacity
+          style={[
+            styles.memberItem,
+            selectedMember?.id === item.id && styles.selectedMemberItem,
+            isExpired && styles.expiredMemberItem,
+          ]}
+          onPress={() => setSelectedMember(item)}
+          disabled={item.allocatedSeatId !== undefined || isExpired}
+        >
+          <Text style={[styles.memberText, isExpired && styles.expiredMemberText]}>{item.fullName}</Text>
+          <Text style={[styles.statusText, isExpired ? styles.expiredStatus : styles.liveStatus]}>
+            {isExpired ? "Expired" : "Live"}
+          </Text>
+          {item.allocatedSeatId && <Text style={styles.allocatedSeatText}>Seat: {item.allocatedSeatId}</Text>}
+        </TouchableOpacity>
+      )
+    },
+    [selectedMember, isMemberExpired],
+  )
 
   return (
     <View style={styles.container}>
@@ -310,7 +328,7 @@ const AllocateSeatsPage: React.FC = () => {
                             : styles.liveStatus,
                         ]}
                       >
-                        {isMemberExpired(selectedSeatData.memberExpiryDate!) ? "Expired" : "Live"}
+                        {selectedSeatData.memberExpiryDate! < new Date() ? "Expired" : "Live"}
                       </Text>
                     </View>
                   </>
@@ -345,6 +363,9 @@ const AllocateSeatsPage: React.FC = () => {
                         style={styles.memberList}
                         onEndReached={loadMembers}
                         onEndReachedThreshold={0.5}
+                        ListFooterComponent={() =>
+                          loading ? <ActivityIndicator size="small" color="#007bff" /> : null
+                        }
                       />
                     </View>
                     <TouchableOpacity

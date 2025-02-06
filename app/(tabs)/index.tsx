@@ -3,8 +3,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import Sidebar from '@/component/Sidebar';
 import Toast from 'react-native-toast-message';
 
-
 const Index = () => {
+
 
   return (
     <>

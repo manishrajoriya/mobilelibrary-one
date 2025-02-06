@@ -10,12 +10,14 @@ import {
   TouchableOpacity,
   Modal,
   Alert,
+  Linking,
 } from "react-native"
 import { useRouter, useLocalSearchParams } from "expo-router"
 import { AntDesign, MaterialIcons } from "@expo/vector-icons"
 import { getMemberById, fetchSeatByMemberId, fetchAttendanceByMemberId, deleteMember } from "@/firebase/functions"
-import useStore from "@/hooks/store"
 import Toast from "react-native-toast-message"
+import WhatsAppModal from "@/component/member/WhatsappMessage"
+import { generateAndShareInvoice } from "@/firebase/helper"
 
 interface MemberDetails {
   id: string
@@ -78,6 +80,8 @@ const MemberDetails: React.FC = () => {
   const [modalImage, setModalImage] = useState<string | null>(null)
   const [isImageLoading, setIsImageLoading] = useState(false)
   const [imageLoadError, setImageLoadError] = useState(false)
+  const [isWhatsAppModalVisible, setIsWhatsAppModalVisible] = useState(false)
+  const [messageTemplates, setMessageTemplates] = useState<string[]>([])
   //    const currentUser = useStore((state: any) => state.currentUser);
   //  console.log("currentUser", currentUser);
 
@@ -140,6 +144,45 @@ const MemberDetails: React.FC = () => {
     }
   }
 
+  const handleSendWhatsAppMessage = (message: string) => {
+    const whatsappUrl = `whatsapp://send?phone=${91}${member?.contactNumber}&text=${encodeURIComponent(message)}`
+    Linking.openURL(whatsappUrl).catch((err) => console.error("An error occurred", err))
+    setIsWhatsAppModalVisible(false)
+  }
+
+
+
+   const handlePrintInvoice = async () => {
+    if (!member) return
+
+    try {
+      await generateAndShareInvoice({
+        invoiceNumber: "INV1", // You might want to generate this dynamically
+        date: new Date().toLocaleDateString(),
+        memberName: member.fullName,
+        membershipId: member.id,
+        planName: member.plan,
+        amount: member.paidAmount,
+        // Additional member details
+        address: member.address,
+        contactNumber: member.contactNumber,
+        email: member.email,
+        admissionDate: member.addmissionDate.toDateString(),
+        expiryDate: member.expiryDate.toDateString(),
+        totalAmount: member.totalAmount,
+        paidAmount: member.paidAmount,
+        dueAmount: member.dueAmount,
+      })
+    } catch (error) {
+      console.error("Error handling invoice print:", error)
+      Toast.show({
+        type: "error",
+        text1: "Failed to generate invoice",
+        text2: "Please try again later",
+      })
+    }
+  }
+
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
@@ -166,7 +209,9 @@ const MemberDetails: React.FC = () => {
             setIsModalVisible(true)
           }}
         >
-          <Image source={{ uri: member.profileImage }} style={styles.avatar} />
+          {
+            member.profileImage ? <Image source={{ uri: member.profileImage }} style={styles.avatar} /> : <View style={styles.avatar} />
+          }
         </TouchableOpacity>
         <View style={styles.profileInfo}>
           <Text style={styles.label}>Name</Text>
@@ -237,7 +282,7 @@ const MemberDetails: React.FC = () => {
             <Image style={styles.documentImage} source={{ uri: member.document }} />
           </TouchableOpacity>
         ) : (
-          <Text style={styles.noDataText}>:( Nothing Found</Text>
+          <Text style={styles.noDataText}>:( Not Found</Text>
         )}
       </View>
 
@@ -246,8 +291,8 @@ const MemberDetails: React.FC = () => {
         <TouchableOpacity style={styles.gymPlanButton} onPress={handleMemberDelete}>
           <Text style={styles.gymPlanButtonText}>Delete Member</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.addOnPlanButton}>
-          <Text style={styles.addOnPlanButtonText}>Add On Plan</Text>
+        <TouchableOpacity style={styles.addOnPlanButton} onPress={() => setIsWhatsAppModalVisible(true)}>
+          <Text style={styles.addOnPlanButtonText}>Message</Text>
         </TouchableOpacity>
       </View>
 
@@ -291,13 +336,12 @@ const MemberDetails: React.FC = () => {
             <Text style={styles.tableCell}>{member.addmissionDate.toDateString()}</Text>
             <Text style={styles.tableCell}>INV1</Text>
             <Text style={styles.tableCell}>{member.paidAmount}</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={handlePrintInvoice}>
               <Text style={[styles.tableCell, styles.printButton]}>Print</Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
-
       <Modal
         visible={isModalVisible}
         transparent={true}
@@ -336,7 +380,13 @@ const MemberDetails: React.FC = () => {
           )}
         </View>
       </Modal>
-      <Toast/>
+      <WhatsAppModal
+        isVisible={isWhatsAppModalVisible}
+        onClose={() => setIsWhatsAppModalVisible(false)}
+        onSend={handleSendWhatsAppMessage}
+        contactNumber={member?.contactNumber || ""}
+      />
+      <Toast />
     </ScrollView>
   )
 }

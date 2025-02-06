@@ -58,6 +58,28 @@ export async function getLibraries({currentUser}: {currentUser: any}){
    }
 }
 
+export async function deleteLibrary({ id }: { id: string }) {
+  try {
+    const libraryRef = doc(db, 'libraries', id);
+    await deleteDoc(libraryRef);
+    console.log('Library deleted successfully');
+  } catch (error) {
+    console.error('Error deleting library:', error);
+    throw error;
+  }
+}
+
+export async function updateLibrary({ id, data, currentUser }: { id: string, data: any, currentUser: any }) {
+  try {
+    const libraryRef = doc(db, 'libraries', id, 'users', currentUser.uid);
+    await updateDoc(libraryRef, data);
+    console.log('Library updated successfully');
+  } catch (error) {
+    console.error('Error updating library:', error);
+    throw error;
+  }
+}
+
 export async function createPlan({ data, currentUser, libraryId }: { data: PlanData, currentUser: any, libraryId: string }) {
   try {
     if (!currentUser) {
