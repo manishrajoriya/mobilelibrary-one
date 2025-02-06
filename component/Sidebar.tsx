@@ -1,8 +1,7 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from "react-native";
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { createDrawerNavigator, DrawerContentScrollView } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
-import Collapsible from "react-native-collapsible";
 import { LinearGradient } from "expo-linear-gradient";
 import MembersDashboard from "./MemberDashbord";
 import MemberProfileCard from "./member/MemberProfileCard";
@@ -12,7 +11,6 @@ import ShiftDetails from "./ShiftDetails";
 import Finance from "./Finance";
 import PricingSection from "./Pricing";
 import AddSeatsPage from "./Seat";
-import WhatsAppMessageScreen from "./WhatsappMessage";
 import AttendancePage from "./member/Attendance";
 import AttendanceReport from "./member/AttendaceReport";
 import AllocateSeatsPage from "./member/AllotSeat";
@@ -30,7 +28,6 @@ type DrawerParamList = {
   Finance: undefined;
   Pricing: undefined;
   AddSeats: undefined;
-  WhatsAppMessage: undefined;
   Attendance: undefined;
   AttendanceReport: undefined;
   AllotSeat: undefined;
@@ -42,38 +39,7 @@ type DrawerParamList = {
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
 
-// Collapsible Section Component
-const CollapsibleSection = ({ title, icon, children, isCollapsed, onToggle, isActive }: { title: string; icon: keyof typeof Ionicons.glyphMap; children: React.ReactNode; isCollapsed: boolean; onToggle: () => void; isActive: boolean }) => {
-  return (
-    <View>
-      <TouchableOpacity onPress={onToggle} style={[styles.sectionHeader, isActive && styles.activeSectionHeader]}>
-        <Ionicons name={icon} size={24} color={isActive ? "#6B46C1" : "#555"} />
-        <Text style={[styles.sectionTitle, isActive && styles.activeSectionTitle]}>{title}</Text>
-        <Ionicons
-          name={isCollapsed ? "chevron-down" : "chevron-up"}
-          size={20}
-          color={isActive ? "#6B46C1" : "#555"}
-          style={{ marginLeft: "auto" }}
-        />
-      </TouchableOpacity>
-      <Collapsible collapsed={isCollapsed}>{children}</Collapsible>
-    </View>
-  );
-};
-
 const CustomDrawerContent = (props: any) => {
-  const [sections, setSections] = useState({
-    members: false,
-    shifts: false,
-    finance: false,
-    attendance: false,
-    others: false,
-  });
-
-  const toggleSection = (section: string) => {
-    setSections((prev: any) => ({ ...prev, [section]: !prev[section] }));
-  };
-
   const { state } = props;
   const activeRoute = state.routes[state.index].name;
 
@@ -102,6 +68,105 @@ const CustomDrawerContent = (props: any) => {
         onPress={() => props.navigation.navigate("AddLibrary")}
         isActive={activeRoute === "AddLibrary"}
       />
+      
+      <DrawerItem
+        label="Add Seats"
+        icon="add-outline"
+        onPress={() => props.navigation.navigate("AddSeats")}
+        isActive={activeRoute === "AddSeats"}
+      />
+
+
+      {/* Line Separator */}
+      <View style={styles.separator} />
+
+      {/* Members Section */}
+      <Text style={styles.sectionTitle}>Members</Text>
+      <DrawerItem
+        label="Add Member"
+        icon="person-add-outline"
+        onPress={() => props.navigation.navigate("AddMember")}
+        isActive={activeRoute === "AddMember"}
+      />
+
+      <DrawerItem
+        label="Allot Seat"
+        icon="person-add-outline"
+        onPress={() => props.navigation.navigate("AllotSeat")}
+        isActive={activeRoute === "AllotSeat"}
+      />
+      <DrawerItem
+        label="Profile"
+        icon="person-outline"
+        onPress={() => props.navigation.navigate("Profile")}
+        isActive={activeRoute === "Profile"}
+      />
+      <DrawerItem
+        label="Member Payment"
+        icon="card-outline"
+        onPress={() => props.navigation.navigate("MemberPayment")}
+        isActive={activeRoute === "MemberPayment"}
+      />
+
+      {/* Line Separator */}
+      <View style={styles.separator} />
+
+      {/* Shifts Section */}
+      <Text style={styles.sectionTitle}>Shifts</Text>
+      <DrawerItem
+        label="Add Shift"
+        icon="calendar-outline"
+        onPress={() => props.navigation.navigate("ShiftForm")}
+        isActive={activeRoute === "ShiftForm"}
+      />
+      <DrawerItem
+        label="Shift Details"
+        icon="document-text-outline"
+        onPress={() => props.navigation.navigate("ShiftDetails")}
+        isActive={activeRoute === "ShiftDetails"}
+      />
+
+      {/* Line Separator */}
+      <View style={styles.separator} />
+
+      {/* Finance Section */}
+      <Text style={styles.sectionTitle}>Finance</Text>
+      <DrawerItem
+        label="Finance"
+        icon="card-outline"
+        onPress={() => props.navigation.navigate("Finance")}
+        isActive={activeRoute === "Finance"}
+      />
+      <DrawerItem
+        label="Pricing"
+        icon="pricetag-outline"
+        onPress={() => props.navigation.navigate("Pricing")}
+        isActive={activeRoute === "Pricing"}
+      />
+
+      {/* Line Separator */}
+      <View style={styles.separator} />
+
+      {/* Attendance Section */}
+      <Text style={styles.sectionTitle}>Attendance</Text>
+      <DrawerItem
+        label="Attendance"
+        icon="checkbox-outline"
+        onPress={() => props.navigation.navigate("Attendance")}
+        isActive={activeRoute === "Attendance"}
+      />
+      <DrawerItem
+        label="Attendance Report"
+        icon="bar-chart-outline"
+        onPress={() => props.navigation.navigate("AttendanceReport")}
+        isActive={activeRoute === "AttendanceReport"}
+      />
+
+      {/* Line Separator */}
+      <View style={styles.separator} />
+
+      {/* Others Section */}
+      <Text style={styles.sectionTitle}>Others</Text>
       <DrawerItem
         label="Download Members"
         icon="download-outline"
@@ -109,129 +174,11 @@ const CustomDrawerContent = (props: any) => {
         isActive={activeRoute === "DownloadMembers"}
       />
       <DrawerItem
-        label="Add Seats"
-        icon="add-outline"
-        onPress={() => props.navigation.navigate("AddSeats")}
-        isActive={activeRoute === "AddSeats"}
+        label="Logout"
+        icon="log-out-outline"
+        onPress={() => props.navigation.navigate("Logout")}
+        isActive={activeRoute === "Logout"}
       />
-      <DrawerItem
-        label="Allot Seat"
-        icon="person-add-outline"
-        onPress={() => props.navigation.navigate("AllotSeat")}
-        isActive={activeRoute === "AllotSeat"}
-      />
-
-      {/* Collapsible Sections */}
-      <CollapsibleSection
-        title="Members"
-        icon="people-outline"
-        isCollapsed={sections.members}
-        onToggle={() => toggleSection("members")}
-        isActive={activeRoute === "AddMember" || activeRoute === "Profile" || activeRoute === "MemberPayment"}
-      >
-        <DrawerItem
-          label="Add Member"
-          icon="person-add-outline"
-          onPress={() => props.navigation.navigate("AddMember")}
-          isActive={activeRoute === "AddMember"}
-        />
-        <DrawerItem
-          label="Profile"
-          icon="person-outline"
-          onPress={() => props.navigation.navigate("Profile")}
-          isActive={activeRoute === "Profile"}
-        />
-        <DrawerItem
-          label="Member Payment"
-          icon="card-outline"
-          onPress={() => props.navigation.navigate("MemberPayment")}
-          isActive={activeRoute === "MemberPayment"}
-        />
-      </CollapsibleSection>
-
-      <CollapsibleSection
-        title="Shifts"
-        icon="calendar-outline"
-        isCollapsed={sections.shifts}
-        onToggle={() => toggleSection("shifts")}
-        isActive={activeRoute === "ShiftForm" || activeRoute === "ShiftDetails"}
-      >
-        <DrawerItem
-          label="Shift Form"
-          icon="calendar-outline"
-          onPress={() => props.navigation.navigate("ShiftForm")}
-          isActive={activeRoute === "ShiftForm"}
-        />
-        <DrawerItem
-          label="Shift Details"
-          icon="document-text-outline"
-          onPress={() => props.navigation.navigate("ShiftDetails")}
-          isActive={activeRoute === "ShiftDetails"}
-        />
-      </CollapsibleSection>
-
-      <CollapsibleSection
-        title="Finance"
-        icon="card-outline"
-        isCollapsed={sections.finance}
-        onToggle={() => toggleSection("finance")}
-        isActive={activeRoute === "Finance" || activeRoute === "Pricing"}
-      >
-        <DrawerItem
-          label="Finance"
-          icon="card-outline"
-          onPress={() => props.navigation.navigate("Finance")}
-          isActive={activeRoute === "Finance"}
-        />
-        <DrawerItem
-          label="Pricing"
-          icon="pricetag-outline"
-          onPress={() => props.navigation.navigate("Pricing")}
-          isActive={activeRoute === "Pricing"}
-        />
-      </CollapsibleSection>
-
-      <CollapsibleSection
-        title="Attendance"
-        icon="checkbox-outline"
-        isCollapsed={sections.attendance}
-        onToggle={() => toggleSection("attendance")}
-        isActive={activeRoute === "Attendance" || activeRoute === "AttendanceReport"}
-      >
-        <DrawerItem
-          label="Attendance"
-          icon="checkbox-outline"
-          onPress={() => props.navigation.navigate("Attendance")}
-          isActive={activeRoute === "Attendance"}
-        />
-        <DrawerItem
-          label="Attendance Report"
-          icon="bar-chart-outline"
-          onPress={() => props.navigation.navigate("AttendanceReport")}
-          isActive={activeRoute === "AttendanceReport"}
-        />
-      </CollapsibleSection>
-
-      <CollapsibleSection
-        title="Others"
-        icon="ellipsis-horizontal-outline"
-        isCollapsed={sections.others}
-        onToggle={() => toggleSection("others")}
-        isActive={activeRoute === "WhatsAppMessage" || activeRoute === "Logout"}
-      >
-        <DrawerItem
-          label="WhatsApp Message"
-          icon="logo-whatsapp"
-          onPress={() => props.navigation.navigate("WhatsAppMessage")}
-          isActive={activeRoute === "WhatsAppMessage"}
-        />
-        <DrawerItem
-          label="Logout"
-          icon="log-out-outline"
-          onPress={() => props.navigation.navigate("Logout")}
-          isActive={activeRoute === "Logout"}
-        />
-      </CollapsibleSection>
     </DrawerContentScrollView>
   );
 };
@@ -261,8 +208,7 @@ const Sidebar = () => {
           color: "#555",
           marginLeft: 10,
         },
-         drawerActiveBackgroundColor: "#6B46C110",
-         
+        drawerActiveBackgroundColor: "#6B46C110",
         drawerActiveTintColor: "#6B46C1",
         drawerInactiveTintColor: "#555",
         drawerItemStyle: {
@@ -288,7 +234,6 @@ const Sidebar = () => {
       <Drawer.Screen name="AllotSeat" component={AllocateSeatsPage} />
       <Drawer.Screen name="Attendance" component={AttendancePage} />
       <Drawer.Screen name="AttendanceReport" component={AttendanceReport} />
-      <Drawer.Screen name="WhatsAppMessage" component={WhatsAppMessageScreen} />
       <Drawer.Screen name="Finance" component={Finance} />
       <Drawer.Screen name="Pricing" component={PricingSection} />
       <Drawer.Screen name="Logout" component={LogoutScreen} />
@@ -301,7 +246,7 @@ const Sidebar = () => {
 const styles = StyleSheet.create({
   drawerHeader: {
     padding: 24,
-   marginTop: 40,
+    marginTop: 40,
     marginBottom: 16,
     borderBottomRightRadius: 20,
     shadowColor: "#000",
@@ -315,29 +260,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
   },
-  headerSubtext: {
-    color: "#fff",
-    fontSize: 14,
-    marginTop: 4,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  activeSectionHeader: {
-    backgroundColor: "#6B46C110",
-    borderRadius: 8,
-  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "500",
-    color: "#555",
-    marginLeft: 10,
-  },
-  activeSectionTitle: {
     color: "#6B46C1",
+    marginLeft: 16,
+    marginTop: 16,
+    marginBottom: 8,
   },
   drawerItem: {
     flexDirection: "row",
@@ -357,6 +286,12 @@ const styles = StyleSheet.create({
   },
   activeDrawerLabel: {
     color: "#6B46C1",
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#ddd",
+    marginVertical: 16,
+    marginHorizontal: 16,
   },
 });
 

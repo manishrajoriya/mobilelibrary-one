@@ -69,10 +69,14 @@ export async function deleteLibrary({ id }: { id: string }) {
   }
 }
 
-export async function updateLibrary({ id, data, currentUser }: { id: string, data: any, currentUser: any }) {
+export async function updateLibrary({ id, data }: { id: string, data: any }) {
   try {
-    const libraryRef = doc(db, 'libraries', id, 'users', currentUser.uid);
-    await updateDoc(libraryRef, data);
+   
+    await updateDoc(doc(db, 'libraries', id), {
+      name: data.name,
+      address: data.address,
+      description: data.description
+    });
     console.log('Library updated successfully');
   } catch (error) {
     console.error('Error updating library:', error);

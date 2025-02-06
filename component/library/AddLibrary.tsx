@@ -175,7 +175,7 @@ const AddLibraryScreen = () => {
     if (!selectedLibrary) return
     setLoading(true)
     try {
-      await updateLibrary({ id: selectedLibrary.id, data, currentUser })
+      await updateLibrary({ id: selectedLibrary.id, data })
       await fetchLibraries()
       setShowFormModal(false)
     } catch (error) {
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2196F3',
+    backgroundColor: '#6B46C1',
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,

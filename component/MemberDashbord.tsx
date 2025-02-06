@@ -8,11 +8,13 @@ import {
   paidAmountCount,
   totalAmountCount,
   dueAmountCount,
+  
 } from "@/firebase/functions"
 import { useRouter } from "expo-router"
 import useStore from "@/hooks/store"
 import LibrarySelectionScreen from "./library/LibrarySelect"
 import { useLibrarySelection } from "@/hooks/useLibrarySelect"
+
 
 
 const StatCard = ({
@@ -51,8 +53,10 @@ export default function MembersDashboard() {
   const router = useRouter()
 
   const currentUser = useStore((state: any) => state.currentUser)
+
   
   const { activeLibrary } = useLibrarySelection()
+
 
   const fetchStats = useCallback(async () => {
     if (!activeLibrary) return
@@ -166,7 +170,7 @@ export default function MembersDashboard() {
           <View style={styles.avatar}>
             <Ionicons name="desktop-outline" size={24} color="#34A853" />
           </View>
-          <Text style={styles.profileName}>{activeLibrary ? activeLibrary.name : "Loading..."}</Text>
+          <Text style={styles.profileName}>{activeLibrary ? activeLibrary.name : "First add library"}</Text>
         </View>
         <LibrarySelectionScreen />
       </View>

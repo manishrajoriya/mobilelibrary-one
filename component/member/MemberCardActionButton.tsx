@@ -1,6 +1,6 @@
 import React from "react";
 import { FlatList, StyleSheet } from "react-native";
-import { ActionButton } from "./ActionBtnUi"; 
+import { ActionButton } from "../ActionBtnUi"; 
 import { Feather } from "@expo/vector-icons";
 
 interface ActionItem {
