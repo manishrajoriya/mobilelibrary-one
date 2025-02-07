@@ -17,24 +17,25 @@ import AllocateSeatsPage from "./member/AllotSeat";
 import LogoutScreen from "./Logout";
 import AddLibraryScreen from "./library/AddLibrary";
 import DownloadMembersPage from "./download/MemberData";
-import MemberPaymentList from "./member/MemberPaymentList.tsx";
+import MemberPaymentList from "./member/MemberPaymentList"
 
 type DrawerParamList = {
   Home: undefined;
-  Profile: undefined;
-  ShiftForm: undefined;
+  AddLibrary: undefined;
+  AddSeats: undefined;
   AddMember: undefined;
+  AllotSeat: undefined;
+  Profile: undefined;
+  MemberPayment: undefined;
+  ShiftForm: undefined;
   ShiftDetails: undefined;
   Finance: undefined;
   Pricing: undefined;
-  AddSeats: undefined;
   Attendance: undefined;
   AttendanceReport: undefined;
-  AllotSeat: undefined;
-  Logout: undefined;
-  AddLibrary: undefined;
   DownloadMembers: undefined;
-  MemberPayment: undefined;
+  Logout: undefined;
+  
 };
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
@@ -184,15 +185,14 @@ const CustomDrawerContent = (props: any) => {
 };
 
 // Drawer Item Component
-const DrawerItem = ({ label, icon, onPress, isActive }: { label: string; icon: keyof typeof Ionicons.glyphMap; onPress: () => void; isActive: boolean }) => {
+const DrawerItem = React.memo(({ label, icon, onPress, isActive }: { label: string; icon: keyof typeof Ionicons.glyphMap; onPress: () => void; isActive: boolean }) => {
   return (
     <TouchableOpacity onPress={onPress} style={[styles.drawerItem, isActive && styles.activeDrawerItem]}>
       <Ionicons name={icon} size={24} color={isActive ? "#6B46C1" : "#555"} />
       <Text style={[styles.drawerLabel, isActive && styles.activeDrawerLabel]}>{label}</Text>
     </TouchableOpacity>
   );
-};
-
+});
 const Sidebar = () => {
   return (
     <Drawer.Navigator
@@ -225,20 +225,20 @@ const Sidebar = () => {
       }}
     >
       <Drawer.Screen name="Home" component={MembersDashboard} />
-      <Drawer.Screen name="Profile" component={MemberProfileCard} />
       <Drawer.Screen name="AddLibrary" component={AddLibraryScreen} />
+      <Drawer.Screen name="AddSeats" component={AddSeatsPage} />
       <Drawer.Screen name="AddMember" component={AddMemberForm} />
+      <Drawer.Screen name="AllotSeat" component={AllocateSeatsPage} />
+      <Drawer.Screen name="Profile" component={MemberProfileCard} />
+      <Drawer.Screen name="MemberPayment" component={MemberPaymentList} />
       <Drawer.Screen name="ShiftForm" component={ShiftForm} />
       <Drawer.Screen name="ShiftDetails" component={ShiftDetails} />
-      <Drawer.Screen name="AddSeats" component={AddSeatsPage} />
-      <Drawer.Screen name="AllotSeat" component={AllocateSeatsPage} />
-      <Drawer.Screen name="Attendance" component={AttendancePage} />
-      <Drawer.Screen name="AttendanceReport" component={AttendanceReport} />
       <Drawer.Screen name="Finance" component={Finance} />
       <Drawer.Screen name="Pricing" component={PricingSection} />
-      <Drawer.Screen name="Logout" component={LogoutScreen} />
+      <Drawer.Screen name="Attendance" component={AttendancePage} />
+      <Drawer.Screen name="AttendanceReport" component={AttendanceReport} />
       <Drawer.Screen name="DownloadMembers" component={DownloadMembersPage} />
-      <Drawer.Screen name="MemberPayment" component={MemberPaymentList} />
+      <Drawer.Screen name="Logout" component={LogoutScreen} />
     </Drawer.Navigator>
   );
 };

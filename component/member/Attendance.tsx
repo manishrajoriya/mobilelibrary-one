@@ -34,8 +34,10 @@ const AttendancePage: React.FC = () => {
     setIsLoading(true);
     try {
       const { members: fetchedMembers } = await getMembers({libraryId: activeLibrary.id, currentUser, pageSize: 10, lastVisible: undefined});
-      setMembers(fetchedMembers);
-      setFilteredMembers(fetchedMembers);
+      // filter expired members
+      const filtered = fetchedMembers.filter((member) => member.expiryDate > new Date());
+      setMembers(filtered);
+      setFilteredMembers(filtered);
 
       // Initialize attendance status from local storage
       const formattedDate = attendanceDate.toISOString().split("T")[0];

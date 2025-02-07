@@ -1,4 +1,3 @@
-import React from "react";
 import {
   View,
   Text,
@@ -9,25 +8,25 @@ import {
   Platform,
   ActivityIndicator,
   Image,
-} from "react-native";
-import { Controller } from "react-hook-form";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { Picker } from "@react-native-picker/picker";
-import { addMember } from "@/firebase/functions";
-import Toast from "react-native-toast-message";
-import { useAddMemberForm } from "@/hooks/useAddMemberForm";
+} from "react-native"
+import { Controller } from "react-hook-form"
+import DateTimePicker from "@react-native-community/datetimepicker"
+import { Picker } from "@react-native-picker/picker"
+import { addMember } from "@/firebase/functions"
+import Toast from "react-native-toast-message"
+import { useAddMemberForm } from "@/hooks/useAddMemberForm"
 
-import { pickImage, uploadImageToFirebase, pickImageSource } from "./ImageUpload";
-import type { FormData } from "@/types/MemberProfile";
-import useStore from "@/hooks/store";
+import { pickImage, uploadImageToFirebase, pickImageSource } from "./ImageUpload"
+import type { FormData } from "@/types/MemberProfile"
+import useStore from "@/hooks/store"
 
 export const formatDate = (date: Date) => {
   return date.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  });
-};
+  })
+}
 
 export default function AddMemberForm() {
   const {
@@ -42,51 +41,49 @@ export default function AddMemberForm() {
     isLoading,
     setIsLoading,
     plans,
-  } = useAddMemberForm();
-  const currentUser = useStore((state: any) => state.currentUser);
-  const activeLibrary = useStore((state: any) => state.activeLibrary);
-
+  } = useAddMemberForm()
+  const currentUser = useStore((state: any) => state.currentUser)
+  const activeLibrary = useStore((state: any) => state.activeLibrary)
 
   const onSubmit = async (data: FormData) => {
     try {
-      await addMember({ data, currentUser, libraryId: activeLibrary.id });
+      await addMember({ data, currentUser, libraryId: activeLibrary.id })
       Toast.show({
         type: "success",
         text1: "Member added successfully",
-      });
+      })
       // Reset form
-      Object.keys(data).forEach((key) => setValue(key as keyof FormData, ""));
-      setValue("admissionDate", new Date());
-      setValue("expiryDate", new Date());
-      
+      Object.keys(data).forEach((key) => setValue(key as keyof FormData, ""))
+      setValue("admissionDate", new Date())
+      setValue("expiryDate", new Date())
     } catch (error) {
-      console.error("Error adding member: ", error);
+      console.error("Error adding member: ", error)
       Toast.show({
         type: "error",
         text1: "Failed to add member",
         text2: "Please try again",
-      });
+      })
     }
-  };
+  }
 
   const handleImagePick = async (field: "profileImage" | "document") => {
     try {
-      const source = await pickImageSource();
-      const uri = await pickImage(source);
+      const source = await pickImageSource()
+      const uri = await pickImage(source)
       if (uri) {
-        setIsLoading(true);
-        const uploadedUrl = await uploadImageToFirebase(uri);
-        setValue(field, uploadedUrl);
+        setIsLoading(true)
+        const uploadedUrl = await uploadImageToFirebase(uri)
+        setValue(field, uploadedUrl)
       }
     } catch (error) {
-      console.error("Upload failed", error);
+      console.error("Upload failed", error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
-  const watchProfileImage = watch("profileImage");
-  const watchDocument = watch("document");
+  const watchProfileImage = watch("profileImage")
+  const watchDocument = watch("document")
 
   return (
     <ScrollView style={styles.container}>
@@ -155,13 +152,6 @@ export default function AddMemberForm() {
         {/* Email */}
         <Controller
           control={control}
-        //   rules={{
-            
-        //     pattern: {
-        //       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-        //       message: "Invalid email address",
-        //     },
-        //   }}
           render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Email</Text>
@@ -191,8 +181,8 @@ export default function AddMemberForm() {
                 <Picker
                   selectedValue={value}
                   onValueChange={(itemValue, itemIndex) => {
-                    onChange(itemValue);
-                    setValue("planId", plans[itemIndex - 1]?.id || "");
+                    onChange(itemValue)
+                    setValue("planId", plans[itemIndex - 1]?.id || "")
                   }}
                   style={styles.picker}
                 >
@@ -209,63 +199,87 @@ export default function AddMemberForm() {
         />
 
         {/* Total, Paid, and Due Amount */}
-        <View style={styles.row}>
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={styles.label}>Total Amount</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="0.00"
-                  keyboardType="numeric"
-                  editable={false}
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-              </View>
-            )}
-            name="totalAmount"
-          />
+        <View style={styles.amountSection}>
+          <View style={styles.amountRow}>
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <View style={[styles.inputGroup, styles.flex1, styles.marginRight]}>
+                  <Text style={styles.label}>Total Amount</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="0.00"
+                    keyboardType="numeric"
+                    editable={false}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                </View>
+              )}
+              name="totalAmount"
+            />
 
-          <Controller
-            control={control}
-            rules={{ required: "Paid amount is required" }}
-            render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-              <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={styles.label}>Paid Amount</Text>
-                <TextInput
-                  style={[styles.input, error && styles.inputError]}
-                  placeholder="0.00"
-                  keyboardType="numeric"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-                {error && <Text style={styles.errorText}>{error.message}</Text>}
-              </View>
-            )}
-            name="paidAmount"
-          />
+            <Controller
+              control={control}
+              rules={{ required: "Paid amount is required" }}
+              render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+                <View style={[styles.inputGroup, styles.flex1]}>
+                  <Text style={styles.label}>Paid Amount</Text>
+                  <TextInput
+                    style={[styles.input, error && styles.inputError]}
+                    placeholder="00"
+                    keyboardType="numeric"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                  {error && <Text style={styles.errorText}>{error.message}</Text>}
+                </View>
+              )}
+              name="paidAmount"
+            />
+          </View>
 
-          <Controller
-            control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={styles.label}>Due Amount</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="0.00"
-                  keyboardType="numeric"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-              </View>
-            )}
-            name="dueAmount"
-          />
+          <View style={styles.amountRow}>
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+                <View style={[styles.inputGroup, styles.flex1, styles.marginRight]}>
+                  <Text style={styles.label}>Discount</Text>
+                  <TextInput
+                    style={[styles.input, error && styles.inputError]}
+                    placeholder="00"
+                    keyboardType="numeric"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                  {error && <Text style={styles.errorText}>{error.message}</Text>}
+                </View>
+              )}
+              name="discount"
+            />
+
+            <Controller
+              control={control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <View style={[styles.inputGroup, styles.flex1]}>
+                  <Text style={styles.label}>Due Amount</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="00"
+                    editable={false}
+                    keyboardType="numeric"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                </View>
+              )}
+              name="dueAmount"
+            />
+          </View>
         </View>
 
         {/* Admission Date */}
@@ -287,9 +301,9 @@ export default function AddMemberForm() {
                   mode="date"
                   display={Platform.OS === "ios" ? "spinner" : "default"}
                   onChange={(event, selectedDate) => {
-                    setShowAdmissionDate(false);
+                    setShowAdmissionDate(false)
                     if (selectedDate) {
-                      onChange(selectedDate);
+                      onChange(selectedDate)
                     }
                   }}
                 />
@@ -319,9 +333,9 @@ export default function AddMemberForm() {
                   mode="date"
                   display={Platform.OS === "ios" ? "spinner" : "default"}
                   onChange={(event, selectedDate) => {
-                    setShowExpiryDate(false);
+                    setShowExpiryDate(false)
                     if (selectedDate) {
-                      onChange(selectedDate);
+                      onChange(selectedDate)
                     }
                   }}
                 />
@@ -331,47 +345,6 @@ export default function AddMemberForm() {
           )}
           name="expiryDate"
         />
-
-        {/* Status */}
-        {/* <Controller
-          control={control}
-          rules={{ required: "Status is required" }}
-          render={({ field: { onChange, value }, fieldState: { error } }) => (
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Status</Text>
-              <View style={[styles.pickerContainer, error && styles.inputError]}>
-                <Picker selectedValue={value} onValueChange={onChange} style={styles.picker}>
-                  {statusOptions.map((status) => (
-                    <Picker.Item key={status} label={status} value={status} />
-                  ))}
-                </Picker>
-              </View>
-              {error && <Text style={styles.errorText}>{error.message}</Text>}
-            </View>
-          )}
-          name="status"
-        /> */}
-
-        {/* Seat Number */}
-        {/* <Controller
-          control={control}
-          rules={{ required: "Seat number is required" }}
-          render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Seat Number</Text>
-              <TextInput
-                style={[styles.input, error && styles.inputError]}
-                placeholder="Seat Number"
-                keyboardType="numeric"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-              {error && <Text style={styles.errorText}>{error.message}</Text>}
-            </View>
-          )}
-          name="seatNumber"
-        /> */}
 
         {/* Upload Buttons */}
         <View style={styles.uploadButtonsContainer}>
@@ -405,7 +378,7 @@ export default function AddMemberForm() {
       </View>
       <Toast />
     </ScrollView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -435,13 +408,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   uploadButtonText: {
-    color: "#000", 
+    color: "#000",
     fontSize: 16,
   },
   label: {
     fontSize: 14,
     marginBottom: 8,
-    color: "#000", 
+    color: "#000",
   },
   input: {
     borderWidth: 1,
@@ -478,13 +451,28 @@ const styles = StyleSheet.create({
   picker: {
     height: 50,
   },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 10,
+  amountSection: {
+    backgroundColor: "#f3f4f6",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 20,
   },
-  flex1: {
-    flex: 1,
+  amountItem: {
+    marginBottom: 12,
+  },
+  amountLabel: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#4b5563",
+    marginBottom: 4,
+  },
+  amountInput: {
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 6,
+    padding: 8,
+    fontSize: 16,
   },
   dateButton: {
     borderWidth: 1,
@@ -519,4 +507,16 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 8,
   },
-});
+ 
+  amountRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  marginRight: {
+    marginRight: 10,
+  },
+  flex1: {
+    flex: 1,
+  },
+})
+

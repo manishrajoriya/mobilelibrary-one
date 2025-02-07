@@ -12,7 +12,7 @@ import {
 } from "@/firebase/functions"
 import { useRouter } from "expo-router"
 import useStore from "@/hooks/store"
-import LibrarySelectionScreen from "./library/LibrarySelect"
+
 import { useLibrarySelection } from "@/hooks/useLibrarySelect"
 
 
@@ -168,11 +168,13 @@ export default function MembersDashboard() {
       <View style={styles.header}>
         <View style={styles.profileSection}>
           <View style={styles.avatar}>
-            <Ionicons name="desktop-outline" size={24} color="#34A853" />
+            <TouchableOpacity onPress={() => router.push("/addLibrary")}>
+              <Ionicons name="add" size={24} color="#34A853" />
+            </TouchableOpacity>
           </View>
           <Text style={styles.profileName}>{activeLibrary ? activeLibrary.name : "First add library"}</Text>
         </View>
-        <LibrarySelectionScreen />
+       {/* Chevron Down */}
       </View>
 
       {/* Add Member Button */}

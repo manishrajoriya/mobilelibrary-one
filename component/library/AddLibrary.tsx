@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import React, { useState } from "react"
 import {
   View,
   Text,
@@ -12,8 +12,9 @@ import {
 } from "react-native"
 import { useForm, Controller } from "react-hook-form"
 import { addLibrary, deleteLibrary, getLibraries, updateLibrary } from "@/firebase/functions"
-import useStore from "@/hooks/store"
 import { Ionicons } from "@expo/vector-icons"
+import { useLibrarySelection } from "@/hooks/useLibrarySelect" // Import the hook
+import  useStore  from "@/hooks/store"
 
 type FormData = {
   name: string
@@ -21,17 +22,13 @@ type FormData = {
   description: string
 }
 
-type Library = {
-  id: string
-  name: string
-  address: string
-  description: string
-}
+
 
 const LibraryForm = ({ onSubmit, onCancel, defaultValues, loading }: any) => {
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     defaultValues
   })
+  
 
   return (
     <View style={styles.formContainer}>
@@ -118,8 +115,14 @@ const LibraryForm = ({ onSubmit, onCancel, defaultValues, loading }: any) => {
   )
 }
 
-const LibraryItem = ({ item, onEdit, onDelete }: any) => (
-  <View style={styles.libraryCard}>
+const LibraryItem = ({ item, isActive, onSelect, onEdit, onDelete }: any) => (
+
+
+
+  <TouchableOpacity 
+    style={[styles.libraryCard, isActive && styles.activeLibraryCard]}
+    onPress={() => onSelect(item.id)}
+  >
     <View style={styles.libraryInfo}>
       <Text style={styles.libraryName}>{item.name}</Text>
       <Text style={styles.libraryAddress}>{item.address}</Text>
@@ -127,6 +130,7 @@ const LibraryItem = ({ item, onEdit, onDelete }: any) => (
     </View>
     
     <View style={styles.actionButtons}>
+      {isActive && <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />}
       <TouchableOpacity onPress={() => onEdit(item)}>
         <Ionicons name="create-outline" size={24} color="#4CAF50" />
       </TouchableOpacity>
@@ -135,34 +139,23 @@ const LibraryItem = ({ item, onEdit, onDelete }: any) => (
         <Ionicons name="trash-outline" size={24} color="#f44336" />
       </TouchableOpacity>
     </View>
-  </View>
+  </TouchableOpacity>
 )
 
 const AddLibraryScreen = () => {
-  const [loading, setLoading] = useState(false)
-  const [libraries, setLibraries] = useState<Library[]>([])
-  const [selectedLibrary, setSelectedLibrary] = useState<Library | null>(null)
+  const [selectedLibrary, setSelectedLibrary] = useState<any>(null)
   const [showFormModal, setShowFormModal] = useState(false)
+  const [loading, setLoading] = useState(false)
+
   const currentUser = useStore((state: any) => state.currentUser)
-
-  useEffect(() => {
-    fetchLibraries()
-  }, [currentUser])
-
-  const fetchLibraries = async () => {
-    try {
-      const fetchedLibraries = await getLibraries({ currentUser })
-      setLibraries(fetchedLibraries)
-    } catch (error) {
-      Alert.alert("Error", "Failed to load libraries")
-    }
-  }
+  // Use the hook for library selection
+  const { libraries, loading: librariesLoading, activeLibrary, handleLibrarySelect } = useLibrarySelection()
 
   const handleAdd = async (data: FormData) => {
     setLoading(true)
     try {
       await addLibrary({ data, currentUser })
-      await fetchLibraries()
+      await getLibraries({ currentUser: currentUser })
       setShowFormModal(false)
     } catch (error) {
       Alert.alert("Error", "Failed to create library")
@@ -176,7 +169,7 @@ const AddLibraryScreen = () => {
     setLoading(true)
     try {
       await updateLibrary({ id: selectedLibrary.id, data })
-      await fetchLibraries()
+      await getLibraries({ currentUser })
       setShowFormModal(false)
     } catch (error) {
       Alert.alert("Error", "Failed to update library")
@@ -185,7 +178,7 @@ const AddLibraryScreen = () => {
     }
   }
 
-  const confirmDelete = (library: Library) => {
+  const confirmDelete = (library: any) => {
     Alert.alert(
       "Confirm Delete",
       `Are you sure you want to delete ${library.name}?`,
@@ -200,7 +193,7 @@ const AddLibraryScreen = () => {
     setLoading(true)
     try {
       await deleteLibrary({ id })
-      await fetchLibraries()
+      await getLibraries({ currentUser })
     } catch (error) {
       Alert.alert("Error", "Failed to delete library")
     } finally {
@@ -212,7 +205,7 @@ const AddLibraryScreen = () => {
     <View style={styles.container}>
       <FlatList
         data={libraries}
-        keyExtractor={(item) => item.id || Math.random().toString()}
+        keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <TouchableOpacity
             style={styles.addButton}
@@ -228,7 +221,9 @@ const AddLibraryScreen = () => {
         renderItem={({ item }) => (
           <LibraryItem
             item={item}
-            onEdit={(library: Library) => {
+            isActive={activeLibrary?.id === item.id}
+            onSelect={handleLibrarySelect}
+            onEdit={(library: any) => {
               setSelectedLibrary(library)
               setShowFormModal(true)
             }}
@@ -253,7 +248,6 @@ const AddLibraryScreen = () => {
     </View>
   )
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -291,6 +285,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     elevation: 2,
+  },
+  activeLibraryCard: {
+    borderColor: '#4CAF50',
+    borderWidth: 2,
   },
   libraryInfo: {
     flex: 1,

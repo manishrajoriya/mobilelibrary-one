@@ -19,6 +19,7 @@ import Toast from "react-native-toast-message"
 import WhatsAppModal from "@/component/member/WhatsappMessage"
 import { generateAndShareInvoice } from "@/firebase/helper"
 
+
 interface MemberDetails {
   id: string
   fullName: string
@@ -34,6 +35,7 @@ interface MemberDetails {
   dueAmount: number
   totalAmount: number
   paidAmount: number
+  discount: number
   planId: string
   plan: string
 }
@@ -172,6 +174,7 @@ const MemberDetails: React.FC = () => {
         totalAmount: member.totalAmount,
         paidAmount: member.paidAmount,
         dueAmount: member.dueAmount,
+        discount: member.discount
       })
     } catch (error) {
       console.error("Error handling invoice print:", error)
@@ -314,7 +317,7 @@ const MemberDetails: React.FC = () => {
             <Text style={styles.planLabel}>End Date</Text>
             <Text style={styles.planValue}>{member.expiryDate.toDateString()}</Text>
             <Text style={styles.planLabel}>Discount</Text>
-            <Text style={styles.planValue}>0</Text>
+            <Text style={styles.planValue}>{member.discount || "00"}</Text>
             <Text style={styles.planLabel}>Tax/Enrolment</Text>
             <Text style={styles.planValue}>0/0</Text>
             <Text style={[styles.planLabel, styles.dueAmount]}>Due Amount</Text>

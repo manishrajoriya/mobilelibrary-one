@@ -49,6 +49,7 @@ interface InvoiceData {
   totalAmount: number;
   paidAmount: number;
   dueAmount: number;
+  discount: number;
 }
 
 export async function generateAndShareInvoice(data: InvoiceData) {
@@ -101,6 +102,10 @@ export async function generateAndShareInvoice(data: InvoiceData) {
           <tr>
             <td><strong>Due Amount</strong></td>
             <td><strong>₹${data.dueAmount}</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Discount</strong></td>
+            <td><strong>₹${data.discount}</strong></td>
           </tr>
         </table>
         <div style="margin-top: 40px; text-align: center;">

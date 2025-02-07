@@ -12,11 +12,9 @@ export default function Index() {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user && activeLibrary?.id) {
+      if (user) {
         router.replace("/(tabs)"); // Navigate to main app
-      } else if (user && !activeLibrary?.id) {
-        router.replace("/addLibrary"); // Navigate to add library
-      } else {
+      }else {
         router.replace("/onbording"); // Navigate to onboarding
       }
     });
@@ -25,7 +23,7 @@ export default function Index() {
   }, []);
 
   useEffect(() => {
-    initializeStore(); // Load persisted state
+    initializeStore(); 
   }, []);
 
   return (

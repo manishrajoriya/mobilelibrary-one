@@ -10,6 +10,7 @@ export interface MemberDetails {
   id: string
   paidAmount: string
   planId?: string
+  discount?: string
   profileImage?: string
 
   totalAmount: string
@@ -68,6 +69,7 @@ export interface FormData {
   totalAmount: string;
   paidAmount: string;
   dueAmount: string;
+  discount: string;
   profileImage: string;
   document: string;
   admissionDate: Date;

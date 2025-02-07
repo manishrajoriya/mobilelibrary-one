@@ -15,6 +15,7 @@ export const useAddMemberForm = () => {
       totalAmount: "",
       paidAmount: "",
       dueAmount: "",
+      discount: "",
       profileImage: "",
       document: "",
       admissionDate: new Date(),
@@ -55,9 +56,10 @@ export const useAddMemberForm = () => {
   useEffect(() => {
     const paidAmount = Number.parseFloat(watch("paidAmount")) || 0
     const totalAmount = Number.parseFloat(watch("totalAmount")) || 0
-    const dueAmount = totalAmount - paidAmount
+    const discount = Number.parseFloat(watch("discount")) || 0
+    const dueAmount = totalAmount - paidAmount - discount
     setValue("dueAmount", dueAmount.toFixed(2))
-  }, [watch("paidAmount"), watch("totalAmount"), setValue]) // Added setValue to dependencies
+  }, [watch("paidAmount"), watch("totalAmount"), watch("discount"), setValue]) // Added setValue to dependencies
 
   useEffect(() => {
     const admissionDate = watch("admissionDate")

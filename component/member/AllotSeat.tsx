@@ -44,10 +44,6 @@ const AllocateSeatsPage: React.FC = () => {
   const [hasMoreMembers, setHasMoreMembers] = useState<boolean>(true)
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [selectedSeatData, setSelectedSeatData] = useState<Seat | null>(null)
-console.log("selectedSeatData",selectedSeatData);
-console.log('selectedmember',selectedMember);
-
-
 
   const currentUser = useStore((state: any) => state.currentUser)
   const activeLibrary = useStore((state: any) => state.activeLibrary)
@@ -99,7 +95,7 @@ console.log('selectedmember',selectedMember);
       setMembers((prevMembers) => {
         const newMembers = fetchedMembers.filter(
           (newMember) => !prevMembers.some((existingMember) => existingMember.id === newMember.id),
-        )
+        ).filter((member) => member.expiryDate > new Date())
         return [...prevMembers, ...newMembers]
       })
 
@@ -112,9 +108,13 @@ console.log('selectedmember',selectedMember);
     }
   }, [lastVisibleDoc, hasMoreMembers, loading, currentUser, activeLibrary.id])
 
-  const isMemberExpired = useCallback((expiryDate: Date) => {
-    console.log(expiryDate);
-    return new Date(expiryDate) < new Date()
+  const isMemberExpired = useCallback((expiryDate: any) => {
+  // Convert Firestore timestamp to JavaScript Date
+  const milliseconds = expiryDate.seconds * 1000 + Math.floor(expiryDate.nanoseconds / 1e6);
+  const expiryDateTime = new Date(milliseconds);
+
+  // Compare with the current time
+  return expiryDateTime < new Date();
   }, [])
 
   const handleAllotSeat = async () => {
@@ -328,7 +328,7 @@ console.log('selectedmember',selectedMember);
                             : styles.liveStatus,
                         ]}
                       >
-                        {selectedSeatData.memberExpiryDate! < new Date() ? "Expired" : "Live"}
+                        {isMemberExpired(selectedSeatData.memberExpiryDate!) ? "Expired" : "Live"}
                       </Text>
                     </View>
                   </>
