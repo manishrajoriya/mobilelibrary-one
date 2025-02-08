@@ -1,59 +1,74 @@
-import { useState, useEffect } from "react"
-import { getLibraries } from "@/firebase/functions"
-import useStore from "@/hooks/store"
-import { useRouter } from "expo-router"
+import { useState, useEffect } from "react";
+import { getLibraries, addLibrary } from "@/firebase/functions";
+import useStore from "@/hooks/store";
+import { useRouter } from "expo-router";
+
 
 export interface Library {
-  id: string
-  name: string
-  address: string
-  description: string
+  id: string;
+  name: string;
+  address: string;
+  description: string;
 }
 
 export function useLibrarySelection() {
-  const [libraries, setLibraries] = useState<Library[]>([])
-  const [loading, setLoading] = useState(true)
-  const currentUser = useStore((state: any) => state.currentUser)
-  const activeLibrary = useStore((state: any) => state.activeLibrary)
-  const setActiveLibrary = useStore((state: any) => state.setActiveLibrary)
-  const router = useRouter()
+  const [libraries, setLibraries] = useState<Library[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const currentUser = useStore((state: any) => state.currentUser);
+  const activeLibrary = useStore((state: any) => state.activeLibrary);
+  const setActiveLibrary = useStore((state: any) => state.setActiveLibrary);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchLibraries = async () => {
       try {
-        const data = await getLibraries({ currentUser })
-        if (Array.isArray(data)) {
-          setLibraries(data)
-          // If no library is selected and we have libraries, select the first one
-          if (!activeLibrary && data.length > 0) {
-            setActiveLibrary(data[0])
+        const data = await getLibraries({ currentUser });
+        if (Array.isArray(data) && data.length > 0) {
+          setLibraries(data);
+          if (!activeLibrary) {
+            setActiveLibrary(data[0]);
           }
+          setError(null);
         } else {
-          throw new Error("Invalid data format")
+          if (currentUser && libraries.length === 0) {
+            const newLibrary = {
+              name: "Default Library",
+              address: "N/A",
+              description: "Automatically created library",
+            };
+            await addLibrary({ data: newLibrary, currentUser });
+            const updatedLibraries = await getLibraries({ currentUser });
+            if (updatedLibraries.length > 0) {
+              setLibraries(updatedLibraries);
+              setActiveLibrary(updatedLibraries[0]);
+            }
+          }
         }
       } catch (error) {
-        console.error("Error fetching libraries:", error)
+        console.error("useError fetching libraries:", error);
+        setError("Unable to fetch libraries. Please try again later.");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchLibraries()
-  }, [currentUser, activeLibrary, setActiveLibrary])
+    fetchLibraries();
+  }, [currentUser, setActiveLibrary]);
 
   const handleLibrarySelect = (libraryId: string) => {
-    const selected = libraries.find((lib) => lib.id === libraryId)
+    const selected = libraries.find((lib) => lib.id === libraryId);
     if (selected) {
-      setActiveLibrary(selected)
+      setActiveLibrary(selected);
     }
-    router.replace("/")
-  }
+    router.replace("/");
+  };
 
   return {
     libraries,
     loading,
+    error,
     activeLibrary,
     handleLibrarySelect,
-  }
+  };
 }
-

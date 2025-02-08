@@ -8,7 +8,7 @@ import useStore from "@/hooks/store";
 export default function Index() {
   const router = useRouter();
   const initializeStore = useStore((state: any) => state.initializeStore);
-  const activeLibrary = useStore((state: any) => state.activeLibrary);
+
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {

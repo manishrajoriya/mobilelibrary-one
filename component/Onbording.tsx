@@ -1,193 +1,111 @@
-import type React from "react";
-import { useState, useRef } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  Dimensions,
-  TouchableOpacity,
-  FlatList,
-} from "react-native";
+import React, { useEffect } from "react";
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  interpolate,
-  useAnimatedScrollHandler,
+  Easing,
 } from "react-native-reanimated";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 const { width, height } = Dimensions.get("window");
 
-const onboardingData = [
-  {
-    title: "Welcome to LibraryPal",
-    description: "Your personal library management assistant",
-    image: "../assets/images/book1.jpg",
-  },
-  {
-    title: "Browse Your Collection",
-    description: "Easily manage and browse through your book collection",
-    image: "../assets/images/book2.jpg",
-  },
-  {
-    title: "Track Your Reading",
-    description: "Set reading goals and track your progress",
-    image: "../assets/images/book3.jpg",
-  },
-  {
-    title: "Discover New Books",
-    description: "Get personalized book recommendations",
-    image: "../assets/images/book4.jpg",
-  },
-];
+interface OnboardingItem {
+  title: string;
+  description: string;
+  icon: React.ComponentProps<typeof Ionicons>["name"];
+  backgroundColor: readonly [string, string, ...string[]]; // Enforce at least two colors
+  textColor: string;
+}
 
-const OnboardingSlide: React.FC<{
-  item: typeof onboardingData[0];
-  index: number;
-  scrollX: Animated.SharedValue<number>;
-}> = ({ item, index, scrollX }) => {
-  const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
+const onboardingData: OnboardingItem = {
+  title: "Welcome to LibraryPal",
+  description: "Your personal library management assistant",
+  icon: "library-outline",
+  backgroundColor: ["#6B46C1", "#8250E8"] as const, // Mark as readonly
+  textColor: "#fff",
+};
 
-  const imageStyle = useAnimatedStyle(() => {
-    const scale = interpolate(scrollX.value, inputRange, [0.5, 1, 0.5]);
-    const opacity = interpolate(scrollX.value, inputRange, [0, 1, 0]);
-    return {
-      transform: [{ scale }],
-      opacity,
-    };
-  });
+const OnboardingSlide = ({ item }: { item: OnboardingItem }) => {
+  const titleOpacity = useSharedValue(0);
+  const descriptionOpacity = useSharedValue(0);
+  const iconOpacity = useSharedValue(0);
 
-  const textStyle = useAnimatedStyle(() => {
-    const translateY = interpolate(scrollX.value, inputRange, [height / 2, 0, -height / 2]);
-    const opacity = interpolate(scrollX.value, inputRange, [0, 1, 0]);
-    return {
-      transform: [{ translateY }],
-      opacity,
-    };
-  });
+  const titleStyle = useAnimatedStyle(() => ({
+    opacity: titleOpacity.value,
+    transform: [{ translateY: withTiming(titleOpacity.value * 0, { duration: 1000 }) }],
+  }));
+
+  const descStyle = useAnimatedStyle(() => ({
+    opacity: descriptionOpacity.value,
+    transform: [{ translateY: withTiming(descriptionOpacity.value * 0, { duration: 1000 }) }],
+  }));
+
+  const iconStyle = useAnimatedStyle(() => ({
+    opacity: iconOpacity.value,
+    transform: [{ scale: withTiming(iconOpacity.value * 1, { duration: 1000 }) }],
+  }));
+
+  useEffect(() => {
+    titleOpacity.value = withTiming(1, { duration: 1000, easing: Easing.ease });
+    descriptionOpacity.value = withTiming(1, { duration: 1000, easing: Easing.ease,  });
+    iconOpacity.value = withTiming(1, { duration: 1000, easing: Easing.ease, });
+  }, []);
 
   return (
-    <View style={[styles.slide, { width }]}>
-      <Animated.Image source={{ uri: item.image }} style={[styles.image, imageStyle]} />
-      <Animated.View style={[styles.textContainer, textStyle]}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.description}>{item.description}</Text>
+    <LinearGradient colors={item.backgroundColor} style={styles.slide}>
+      <Animated.View style={[styles.iconContainer, iconStyle]}>
+        <Ionicons name={item.icon} size={80} color={item.textColor} />
       </Animated.View>
-    </View>
+
+      <Animated.View style={[styles.textContainer, titleStyle]}>
+        <Text style={[styles.title, { color: item.textColor }]}>{item.title}</Text>
+      </Animated.View>
+
+      <Animated.View style={[styles.textContainer, descStyle]}>
+        <Text style={[styles.description, { color: item.textColor }]}>{item.description}</Text>
+      </Animated.View>
+    </LinearGradient>
   );
 };
 
-const PaginationDots: React.FC<{
-  data: typeof onboardingData;
-  scrollX: Animated.SharedValue<number>;
-}> = ({ data, scrollX }) => {
+const GetStartedButton = ({ onPress }: { onPress: () => void }) => {
+  const buttonScale = useSharedValue(1);
+
+  const buttonStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: buttonScale.value }],
+  }));
+
   return (
-    <View style={styles.pagination}>
-      {data.map((_, index) => {
-        const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
-
-        const dotStyle = useAnimatedStyle(() => {
-          const opacity = interpolate(scrollX.value, inputRange, [0.3, 1, 0.3]);
-          const scale = interpolate(scrollX.value, inputRange, [0.7, 1, 0.7]);
-          return {
-            opacity,
-            transform: [{ scale }],
-          };
-        });
-
-        return (
-          <Animated.View key={index} style={[styles.paginationDot, dotStyle]} />
-        );
-      })}
-    </View>
+    <TouchableOpacity
+      onPressIn={() => (buttonScale.value = withTiming(0.95, { duration: 100 }))}
+      onPressOut={() => (buttonScale.value = withTiming(1, { duration: 100 }))}
+      onPress={onPress}
+      activeOpacity={0.9}
+    >
+      <Animated.View style={[styles.getStartedButton, buttonStyle]}>
+        <Text style={styles.getStartedText}>Get Started</Text>
+      </Animated.View>
+    </TouchableOpacity>
   );
 };
 
-const OnboardingButtons: React.FC<{
-  currentIndex: number;
-  onNext: () => void;
-  onSkip: () => void;
-  onGetStarted: () => void;
-}> = ({ currentIndex, onNext, onSkip, onGetStarted }) => {
-  return (
-    <View style={styles.buttonContainer}>
-      {currentIndex < onboardingData.length - 1 ? (
-        <>
-          <TouchableOpacity onPress={onSkip} style={styles.button}>
-            <Text style={styles.buttonText}>Skip</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={onNext} style={[styles.button, styles.nextButton]}>
-            <Text style={[styles.buttonText, styles.nextButtonText]}>Next</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <TouchableOpacity onPress={onGetStarted} style={[styles.button, styles.getStartedButton]}>
-          <Text style={[styles.buttonText, styles.getStartedText]}>Get Started</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
-};
-
-const Onboarding: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const scrollX = useSharedValue(0);
-  const flatListRef = useRef<FlatList>(null);
+const Onboarding = () => {
   const router = useRouter();
-
-  const handleNext = () => {
-    if (currentIndex < onboardingData.length - 1) {
-      const nextIndex = currentIndex + 1;
-      setCurrentIndex(nextIndex);
-      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
-      scrollX.value = withTiming(nextIndex * width);
-    }
-  };
-
-  const handleSkip = () => {
-    const lastIndex = onboardingData.length - 1;
-    setCurrentIndex(lastIndex);
-    flatListRef.current?.scrollToIndex({ index: lastIndex, animated: true });
-    scrollX.value = withTiming(lastIndex * width);
-  };
 
   const handleGetStarted = () => {
     router.push("/auth");
   };
 
-  const onScroll = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      scrollX.value = event.contentOffset.x;
-    },
-  });
-
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-      <Animated.FlatList
-        ref={flatListRef}
-        data={onboardingData}
-        renderItem={({ item, index }) => (
-          <OnboardingSlide item={item} index={index} scrollX={scrollX} />
-        )}
-        keyExtractor={(_, index) => index.toString()}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-      />
+      <OnboardingSlide item={onboardingData} />
       <View style={styles.bottomContainer}>
-        <PaginationDots data={onboardingData} scrollX={scrollX} />
-        <OnboardingButtons
-          currentIndex={currentIndex}
-          onNext={handleNext}
-          onSkip={handleSkip}
-          onGetStarted={handleGetStarted}
-        />
+        <GetStartedButton onPress={handleGetStarted} />
       </View>
     </View>
   );
@@ -202,27 +120,27 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    width,
+    height,
   },
-  image: {
-    width: width * 0.8,
-    height: width * 0.8,
-    resizeMode: "contain",
+  iconContainer: {
+    marginBottom: 30,
   },
   textContainer: {
     alignItems: "center",
-    marginTop: 20,
+    paddingHorizontal: 40,
+    marginVertical: 10,
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: "bold",
-    marginBottom: 10,
     textAlign: "center",
+    marginBottom: 15,
   },
   description: {
-    fontSize: 16,
+    fontSize: 18,
     textAlign: "center",
-    paddingHorizontal: 20,
-    color: "#666",
+    lineHeight: 24,
   },
   bottomContainer: {
     position: "absolute",
@@ -231,47 +149,20 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: 20,
   },
-  pagination: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: 20,
-  },
-  paginationDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#333",
-    marginHorizontal: 5,
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  button: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: "#333",
-  },
-  buttonText: {
-    fontSize: 16,
-    color: "#333",
-  },
-  nextButton: {
-    backgroundColor: "#333",
-  },
-  nextButtonText: {
-    color: "#fff",
-  },
   getStartedButton: {
-    backgroundColor: "#333",
+    backgroundColor: "#fff",
     paddingVertical: 15,
+    borderRadius: 30,
     alignItems: "center",
     width: "100%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
   },
   getStartedText: {
-    color: "#fff",
+    color: onboardingData.backgroundColor[0],
     fontSize: 18,
     fontWeight: "bold",
   },

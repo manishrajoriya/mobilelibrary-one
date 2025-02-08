@@ -1,95 +1,93 @@
-import { useEffect, useState } from "react"
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native"
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, type AuthError } from "firebase/auth"
-import { auth } from "@/utils/firebaseConfig"
-import { useRouter } from "expo-router"
-import useStore from "@/hooks/store"
-import AddLibraryScreen from "./library/AddLibrary"
-
-
+import { useEffect, useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, type AuthError } from "firebase/auth";
+import { auth } from "@/utils/firebaseConfig";
+import { useRouter } from "expo-router";
+import useStore from "@/hooks/store";
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [isLogin, setIsLogin] = useState(true)
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLogin, setIsLogin] = useState(true);
+  const router = useRouter();
   const setCurrentUser = useStore((state: any) => state.setCurrentUser);
- 
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      setCurrentUser(user)
-      if (user ) {
-        router.push("/(tabs)")
+      setCurrentUser(user);
+      if (user) {
+        router.push("/(tabs)");
       }
-    })
-    return () => unsubscribe()
-  }, [auth])
+    });
+    return () => unsubscribe();
+  }, []);
 
   const validateForm = (): boolean => {
     if (!email || !password) {
-      Alert.alert("Error", "Please fill in all fields")
-      return false
+      Alert.alert("Error", "Please fill in all fields");
+      return false;
     }
     if (!/\S+@\S+\.\S+/.test(email)) {
-      Alert.alert("Error", "Please enter a valid email address")
-      return false
+      Alert.alert("Error", "Please enter a valid email address");
+      return false;
     }
     if (password.length < 6) {
-      Alert.alert("Error", "Password must be at least 6 characters long")
-      return false
+      Alert.alert("Error", "Password must be at least 6 characters long");
+      return false;
     }
-    return true
-  }
+    return true;
+  };
 
   const handleAuth = async (): Promise<void> => {
-    if (!validateForm()) return
-
+    if (!validateForm()) return;
     try {
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password)
-        Alert.alert("Success", "Logged in successfully")
+        await signInWithEmailAndPassword(auth, email, password);
+        Alert.alert("Success", "Logged in successfully");
       } else {
-        await createUserWithEmailAndPassword(auth, email, password)
-        Alert.alert("Success", "Account created successfully")
+        await createUserWithEmailAndPassword(auth, email, password);
+        Alert.alert("Success", "Account created successfully");
       }
-      router.replace("/(tabs)")
+      router.replace("/(tabs)");
     } catch (error) {
-      const authError = error as AuthError
-      Alert.alert("Error", isLogin ? "Login failed: " : "Signup failed: " + authError.message)
+      const authError = error as AuthError;
+      Alert.alert("Error", isLogin ? "Login failed: " : "Signup failed: " + authError.message);
     }
-  }
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{isLogin ? "Login" : "Sign Up"}</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoComplete="email"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        autoComplete="password"
-      />
-      <TouchableOpacity style={styles.button} onPress={handleAuth}>
-        <Text style={styles.buttonText}>{isLogin ? "Login" : "Sign Up"}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
-        <Text style={styles.switchText}>{isLogin ? "Need an account? Sign Up" : "Already have an account? Login"}</Text>
-      </TouchableOpacity>
+      <View style={styles.card}>
+        <Text style={styles.title}>{isLogin ? "Login" : "Sign Up"}</Text>
+        <Text style={styles.label}>Email</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+        />
+        <Text style={styles.label}>Password</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          autoComplete="password"
+        />
+        <TouchableOpacity style={styles.button} onPress={handleAuth}>
+          <Text style={styles.buttonText}>{isLogin ? "Login" : "Sign Up"}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
+          <Text style={styles.switchText}>{isLogin ? "Need an account? Sign Up" : "Already have an account? Login"}</Text>
+        </TouchableOpacity>
+      </View>
     </View>
-  )
+  );
 }
-
-
 
 export const styles = StyleSheet.create({
   container: {
@@ -97,28 +95,46 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f0f2f5",
+  },
+  card: {
+    width: "100%",
+    maxWidth: 400,
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
   },
   title: {
-    fontSize: 24,
-    marginBottom: 20,
+    fontSize: 26,
     fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginBottom: 5,
+    color: "#333",
   },
   input: {
     width: "100%",
-    height: 40,
-    borderColor: "gray",
+    height: 45,
+    borderColor: "#ccc",
     borderWidth: 1,
-    marginBottom: 10,
+    marginBottom: 15,
     paddingHorizontal: 10,
     borderRadius: 5,
-    backgroundColor: "white",
+    backgroundColor: "#fff",
   },
   button: {
     backgroundColor: "#007AFF",
-    padding: 10,
+    padding: 12,
     borderRadius: 5,
-    width: "100%",
     alignItems: "center",
     marginTop: 10,
   },
@@ -128,8 +144,9 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   switchText: {
-    marginTop: 20,
+    marginTop: 15,
     color: "#007AFF",
+    textAlign: "center",
+    fontWeight: "bold",
   },
-})
-
+});

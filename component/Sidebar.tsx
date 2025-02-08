@@ -1,198 +1,201 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { createDrawerNavigator, DrawerContentScrollView } from "@react-navigation/drawer";
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import MembersDashboard from "./MemberDashbord";
-import MemberProfileCard from "./member/MemberProfileCard";
-import ShiftForm from "./ShiftForm";
-import AddMemberForm from "./member/AddMemberForm";
-import ShiftDetails from "./ShiftDetails";
-import Finance from "./Finance";
-import PricingSection from "./Pricing";
-import AddSeatsPage from "./Seat";
-import AttendancePage from "./member/Attendance";
-import AttendanceReport from "./member/AttendaceReport";
-import AllocateSeatsPage from "./member/AllotSeat";
-import LogoutScreen from "./Logout";
-import AddLibraryScreen from "./library/AddLibrary";
-import DownloadMembersPage from "./download/MemberData";
+import React from "react"
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from "react-native"
+import { createDrawerNavigator, DrawerContentScrollView } from "@react-navigation/drawer"
+import { Ionicons } from "@expo/vector-icons"
+import { LinearGradient } from "expo-linear-gradient"
+import MembersDashboard from "./MemberDashbord"
+import MemberProfileCard from "./member/MemberProfileCard"
+import ShiftForm from "./ShiftForm"
+import AddMemberForm from "./member/AddMemberForm"
+import ShiftDetails from "./ShiftDetails"
+import Finance from "./Finance"
+import AddSeatsPage from "./Seat"
+import AttendancePage from "./member/Attendance"
+import AttendanceReport from "./member/AttendaceReport"
+import AllocateSeatsPage from "./member/AllotSeat"
+import LogoutScreen from "./Logout"
+import AddLibraryScreen from "./library/AddLibrary"
+import DownloadMembersPage from "./download/MemberData"
 import MemberPaymentList from "./member/MemberPaymentList"
 
 type DrawerParamList = {
-  Home: undefined;
-  AddLibrary: undefined;
-  AddSeats: undefined;
-  AddMember: undefined;
-  AllotSeat: undefined;
-  Profile: undefined;
-  MemberPayment: undefined;
-  ShiftForm: undefined;
-  ShiftDetails: undefined;
-  Finance: undefined;
-  Pricing: undefined;
-  Attendance: undefined;
-  AttendanceReport: undefined;
-  DownloadMembers: undefined;
-  Logout: undefined;
-  
-};
+  Home: undefined
+  AddLibrary: undefined
+  AddSeats: undefined
+  AddMember: undefined
+  AllotSeat: undefined
+  Profile: undefined
+  MemberPayment: undefined
+  ShiftForm: undefined
+  ShiftDetails: undefined
+  Finance: undefined
+  Attendance: undefined
+  AttendanceReport: undefined
+  DownloadMembers: undefined
+  Logout: undefined
+}
 
-const Drawer = createDrawerNavigator<DrawerParamList>();
+const Drawer = createDrawerNavigator<DrawerParamList>()
 
 const CustomDrawerContent = (props: any) => {
-  const { state } = props;
-  const activeRoute = state.routes[state.index].name;
+  const { state } = props
+  const activeRoute = state.routes[state.index].name
+
+  const fadeAnim = React.useRef(new Animated.Value(0)).current
+
+  React.useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start()
+  }, [fadeAnim])
 
   return (
-    <DrawerContentScrollView {...props} contentContainerStyle={{ paddingTop: 0 }}>
-      {/* Drawer Header */}
-      <LinearGradient
-        colors={["#6B46C1", "#8250E8"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.drawerHeader}
-      >
-        <Text style={styles.headerText}>Welcome!</Text>
-      </LinearGradient>
+    <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+      <DrawerContentScrollView {...props} contentContainerStyle={{ paddingTop: 0 }}>
+        {/* Drawer Header */}
+        <LinearGradient
+          colors={["#6B46C1", "#8250E8"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.drawerHeader}
+        >
+          <Text style={styles.headerText}>Welcome!</Text>
+        </LinearGradient>
+        {/* Direct Drawer Items */}
+        <DrawerItem
+          label="Home"
+          icon="home-outline"
+          onPress={() => props.navigation.navigate("Home")}
+          isActive={activeRoute === "Home"}
+        />
+        <DrawerItem
+          label="Add Library"
+          icon="library-outline"
+          onPress={() => props.navigation.navigate("AddLibrary")}
+          isActive={activeRoute === "AddLibrary"}
+        />
+        <DrawerItem
+          label="Add Seats"
+          icon="add-outline"
+          onPress={() => props.navigation.navigate("AddSeats")}
+          isActive={activeRoute === "AddSeats"}
+        />
 
-      {/* Direct Drawer Items */}
-      <DrawerItem
-        label="Home"
-        icon="home-outline"
-        onPress={() => props.navigation.navigate("Home")}
-        isActive={activeRoute === "Home"}
-      />
-      <DrawerItem
-        label="Add Library"
-        icon="library-outline"
-        onPress={() => props.navigation.navigate("AddLibrary")}
-        isActive={activeRoute === "AddLibrary"}
-      />
-      
-      <DrawerItem
-        label="Add Seats"
-        icon="add-outline"
-        onPress={() => props.navigation.navigate("AddSeats")}
-        isActive={activeRoute === "AddSeats"}
-      />
-
-
-      {/* Line Separator */}
-      <View style={styles.separator} />
-
-      {/* Members Section */}
-      <Text style={styles.sectionTitle}>Members</Text>
-      <DrawerItem
-        label="Add Member"
-        icon="person-add-outline"
-        onPress={() => props.navigation.navigate("AddMember")}
-        isActive={activeRoute === "AddMember"}
-      />
-
-      <DrawerItem
-        label="Allot Seat"
-        icon="person-add-outline"
-        onPress={() => props.navigation.navigate("AllotSeat")}
-        isActive={activeRoute === "AllotSeat"}
-      />
-      <DrawerItem
-        label="Profile"
-        icon="person-outline"
-        onPress={() => props.navigation.navigate("Profile")}
-        isActive={activeRoute === "Profile"}
-      />
-      <DrawerItem
-        label="Member Payment"
-        icon="card-outline"
-        onPress={() => props.navigation.navigate("MemberPayment")}
-        isActive={activeRoute === "MemberPayment"}
-      />
-
-      {/* Line Separator */}
-      <View style={styles.separator} />
-
-      {/* Shifts Section */}
-      <Text style={styles.sectionTitle}>Shifts</Text>
-      <DrawerItem
-        label="Add Shift"
-        icon="calendar-outline"
-        onPress={() => props.navigation.navigate("ShiftForm")}
-        isActive={activeRoute === "ShiftForm"}
-      />
-      <DrawerItem
-        label="Shift Details"
-        icon="document-text-outline"
-        onPress={() => props.navigation.navigate("ShiftDetails")}
-        isActive={activeRoute === "ShiftDetails"}
-      />
-
-      {/* Line Separator */}
-      <View style={styles.separator} />
-
-      {/* Finance Section */}
-      <Text style={styles.sectionTitle}>Finance</Text>
-      <DrawerItem
-        label="Finance"
-        icon="card-outline"
-        onPress={() => props.navigation.navigate("Finance")}
-        isActive={activeRoute === "Finance"}
-      />
-      <DrawerItem
-        label="Pricing"
-        icon="pricetag-outline"
-        onPress={() => props.navigation.navigate("Pricing")}
-        isActive={activeRoute === "Pricing"}
-      />
-
-      {/* Line Separator */}
-      <View style={styles.separator} />
-
-      {/* Attendance Section */}
-      <Text style={styles.sectionTitle}>Attendance</Text>
-      <DrawerItem
-        label="Attendance"
-        icon="checkbox-outline"
-        onPress={() => props.navigation.navigate("Attendance")}
-        isActive={activeRoute === "Attendance"}
-      />
-      <DrawerItem
-        label="Attendance Report"
-        icon="bar-chart-outline"
-        onPress={() => props.navigation.navigate("AttendanceReport")}
-        isActive={activeRoute === "AttendanceReport"}
-      />
-
-      {/* Line Separator */}
-      <View style={styles.separator} />
-
-      {/* Others Section */}
-      <Text style={styles.sectionTitle}>Others</Text>
-      <DrawerItem
-        label="Download Members"
-        icon="download-outline"
-        onPress={() => props.navigation.navigate("DownloadMembers")}
-        isActive={activeRoute === "DownloadMembers"}
-      />
-      <DrawerItem
-        label="Logout"
-        icon="log-out-outline"
-        onPress={() => props.navigation.navigate("Logout")}
-        isActive={activeRoute === "Logout"}
-      />
-    </DrawerContentScrollView>
-  );
-};
+        {/* Line Separator */}
+        <View style={styles.separator} />
+        {/* Members Section */}
+        <Text style={styles.sectionTitle}>Members</Text>
+        <DrawerItem
+          label="Add Member"
+          icon="person-add-outline"
+          onPress={() => props.navigation.navigate("AddMember")}
+          isActive={activeRoute === "AddMember"}
+        />
+        <DrawerItem
+          label="Allot Seat"
+          icon="person-add-outline"
+          onPress={() => props.navigation.navigate("AllotSeat")}
+          isActive={activeRoute === "AllotSeat"}
+        />
+        <DrawerItem
+          label="Profile"
+          icon="person-outline"
+          onPress={() => props.navigation.navigate("Profile")}
+          isActive={activeRoute === "Profile"}
+        />
+        <DrawerItem
+          label="Member Payment"
+          icon="card-outline"
+          onPress={() => props.navigation.navigate("MemberPayment")}
+          isActive={activeRoute === "MemberPayment"}
+        />
+        {/* Line Separator */}
+        <View style={styles.separator} />
+        {/* Shifts Section */}
+        <Text style={styles.sectionTitle}>Shifts</Text>
+        <DrawerItem
+          label="Add Shift"
+          icon="calendar-outline"
+          onPress={() => props.navigation.navigate("ShiftForm")}
+          isActive={activeRoute === "ShiftForm"}
+        />
+        <DrawerItem
+          label="Shift Details"
+          icon="document-text-outline"
+          onPress={() => props.navigation.navigate("ShiftDetails")}
+          isActive={activeRoute === "ShiftDetails"}
+        />
+        {/* Line Separator */}
+        <View style={styles.separator} />
+        {/* Finance Section */}
+        <Text style={styles.sectionTitle}>Finance</Text>
+        <DrawerItem
+          label="Finance"
+          icon="card-outline"
+          onPress={() => props.navigation.navigate("Finance")}
+          isActive={activeRoute === "Finance"}
+        />
+        {/* Removed Pricing Section */}
+        {/* Line Separator */}
+        <View style={styles.separator} />
+        {/* Attendance Section */}
+        <Text style={styles.sectionTitle}>Attendance</Text>
+        <DrawerItem
+          label="Attendance"
+          icon="checkbox-outline"
+          onPress={() => props.navigation.navigate("Attendance")}
+          isActive={activeRoute === "Attendance"}
+        />
+        <DrawerItem
+          label="Attendance Report"
+          icon="bar-chart-outline"
+          onPress={() => props.navigation.navigate("AttendanceReport")}
+          isActive={activeRoute === "AttendanceReport"}
+        />
+        {/* Line Separator */}
+        <View style={styles.separator} />
+        {/* Others Section */}
+        <Text style={styles.sectionTitle}>Others</Text>
+        <DrawerItem
+          label="Download Members"
+          icon="download-outline"
+          onPress={() => props.navigation.navigate("DownloadMembers")}
+          isActive={activeRoute === "DownloadMembers"}
+        />
+        <DrawerItem
+          label="Logout"
+          icon="log-out-outline"
+          onPress={() => props.navigation.navigate("Logout")}
+          isActive={activeRoute === "Logout"}
+        />
+      </DrawerContentScrollView>
+    </Animated.View>
+  )
+}
 
 // Drawer Item Component
-const DrawerItem = React.memo(({ label, icon, onPress, isActive }: { label: string; icon: keyof typeof Ionicons.glyphMap; onPress: () => void; isActive: boolean }) => {
-  return (
-    <TouchableOpacity onPress={onPress} style={[styles.drawerItem, isActive && styles.activeDrawerItem]}>
-      <Ionicons name={icon} size={24} color={isActive ? "#6B46C1" : "#555"} />
-      <Text style={[styles.drawerLabel, isActive && styles.activeDrawerLabel]}>{label}</Text>
-    </TouchableOpacity>
-  );
-});
+const DrawerItem = React.memo(
+  ({
+    label,
+    icon,
+    onPress,
+    isActive,
+  }: { label: string; icon: keyof typeof Ionicons.glyphMap; onPress: () => void; isActive: boolean }) => {
+    return (
+      <TouchableOpacity
+        onPress={onPress}
+        style={[styles.drawerItem, isActive && styles.activeDrawerItem]}
+        activeOpacity={0.7}
+      >
+        <Ionicons name={icon} size={24} color={isActive ? "#6B46C1" : "#555"} />
+        <Text style={[styles.drawerLabel, isActive && styles.activeDrawerLabel]}>{label}</Text>
+      </TouchableOpacity>
+    )
+  },
+)
+
 const Sidebar = () => {
   return (
     <Drawer.Navigator
@@ -234,14 +237,14 @@ const Sidebar = () => {
       <Drawer.Screen name="ShiftForm" component={ShiftForm} />
       <Drawer.Screen name="ShiftDetails" component={ShiftDetails} />
       <Drawer.Screen name="Finance" component={Finance} />
-      <Drawer.Screen name="Pricing" component={PricingSection} />
+      {/* Removed Pricing Screen */}
       <Drawer.Screen name="Attendance" component={AttendancePage} />
       <Drawer.Screen name="AttendanceReport" component={AttendanceReport} />
       <Drawer.Screen name="DownloadMembers" component={DownloadMembersPage} />
       <Drawer.Screen name="Logout" component={LogoutScreen} />
     </Drawer.Navigator>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   drawerHeader: {
@@ -257,35 +260,37 @@ const styles = StyleSheet.create({
   },
   headerText: {
     color: "#fff",
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: "500",
+    fontSize: 18,
+    fontWeight: "600",
     color: "#6B46C1",
     marginLeft: 16,
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: 24,
+    marginBottom: 12,
   },
   drawerItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 32,
+    marginVertical: 2,
   },
   activeDrawerItem: {
     backgroundColor: "#6B46C110",
     borderRadius: 8,
   },
   drawerLabel: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "500",
     color: "#555",
-    marginLeft: 10,
+    marginLeft: 16,
   },
   activeDrawerLabel: {
     color: "#6B46C1",
+    fontWeight: "600",
   },
   separator: {
     height: 1,
@@ -293,6 +298,7 @@ const styles = StyleSheet.create({
     marginVertical: 16,
     marginHorizontal: 16,
   },
-});
+})
 
-export default Sidebar;
+export default Sidebar
+

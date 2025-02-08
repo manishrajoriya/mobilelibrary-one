@@ -46,14 +46,14 @@ export async function addLibrary({data, currentUser}: {data: any, currentUser: a
 export async function getLibraries({currentUser}: {currentUser: any}){
   try {
     if (!currentUser) {
-      throw new Error('User not authenticated. Redirecting to sign-in...');
+      return []
     }
     const q = query(collection(db, 'libraries'), where('admin', '==', currentUser.uid));
     const librariesSnapshot = await getDocs(q);
     const libraries = librariesSnapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name, address: doc.data().address, description: doc.data().description }));
     return libraries
    } catch (error) {
-    console.error('Error getting libraries:', error);
+    console.error('1Error getting libraries:', error);
     throw error;
    }
 }
