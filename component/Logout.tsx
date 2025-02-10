@@ -55,6 +55,12 @@ const LogoutScreen = () => {
           <Text style={styles.buttonText}>Logout</Text>
         )}
       </TouchableOpacity>
+      <View style={styles.contactContainer}>
+        <Text style={styles.contactText}>
+          You can contact us at: OneLibrary001@gmail.com
+          whatsapp: +91 9468737084
+        </Text>
+      </View>
     </View>
   );
 };
@@ -95,6 +101,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
+  },
+  contactContainer: {
+    marginTop: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  contactText: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 24,
   },
 });
 

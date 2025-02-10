@@ -78,7 +78,7 @@ export default function LoginScreen() {
           secureTextEntry
           autoComplete="password"
         />
-        <TouchableOpacity style={styles.button} onPress={handleAuth}>
+        <TouchableOpacity style={styles.button} onPress={handleAuth} >
           <Text style={styles.buttonText}>{isLogin ? "Login" : "Sign Up"}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
