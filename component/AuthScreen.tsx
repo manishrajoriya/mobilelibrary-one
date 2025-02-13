@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, type AuthError } from "firebase/auth";
 import { auth } from "@/utils/firebaseConfig";
 import { useRouter } from "expo-router";
@@ -9,6 +9,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const setCurrentUser = useStore((state: any) => state.setCurrentUser);
 
@@ -40,6 +41,7 @@ export default function LoginScreen() {
 
   const handleAuth = async (): Promise<void> => {
     if (!validateForm()) return;
+    setLoading(true);
     try {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
@@ -52,6 +54,8 @@ export default function LoginScreen() {
     } catch (error) {
       const authError = error as AuthError;
       Alert.alert("Error", isLogin ? "Login failed: " : "Signup failed: " + authError.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,8 +82,12 @@ export default function LoginScreen() {
           secureTextEntry
           autoComplete="password"
         />
-        <TouchableOpacity style={styles.button} onPress={handleAuth} >
-          <Text style={styles.buttonText}>{isLogin ? "Login" : "Sign Up"}</Text>
+        <TouchableOpacity 
+          style={[styles.button, loading && styles.buttonDisabled]} 
+          onPress={handleAuth} 
+          disabled={loading}
+        >
+          {loading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>{isLogin ? "Login" : "Sign Up"}</Text>}
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
           <Text style={styles.switchText}>{isLogin ? "Need an account? Sign Up" : "Already have an account? Login"}</Text>
@@ -137,6 +145,9 @@ export const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: "center",
     marginTop: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: "#a0c4ff",
   },
   buttonText: {
     color: "white",
