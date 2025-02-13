@@ -21,7 +21,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
   }
 }
 
-rootProject.name = 'mobilelibrary'
+rootProject.name = 'One Library'
 
 dependencyResolutionManagement {
   versionCatalogs {
