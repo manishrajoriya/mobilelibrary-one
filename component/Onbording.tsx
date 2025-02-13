@@ -22,7 +22,7 @@ interface OnboardingItem {
 }
 
 const onboardingData: OnboardingItem = {
-  title: "Welcome to LibraryPal",
+  title: "Welcome to One Library",
   description: "Your personal library management assistant",
   icon: "library-outline",
   backgroundColor: ["#6B46C1", "#8250E8"] as const, // Mark as readonly

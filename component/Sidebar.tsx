@@ -61,7 +61,7 @@ const CustomDrawerContent = (props: any) => {
           end={{ x: 1, y: 1 }}
           style={styles.drawerHeader}
         >
-          <Text style={styles.headerText}>Welcome!</Text>
+          <Text style={styles.headerText}>One Library</Text>
         </LinearGradient>
         {/* Direct Drawer Items */}
         <DrawerItem
