@@ -175,6 +175,7 @@ export default function MembersDashboard() {
           <Text style={styles.profileName}>{activeLibrary ? activeLibrary.name : "First add library"}</Text>
         </View>
        {/* Chevron Down */}
+      
       </View>
 
       {/* Add Member Button */}

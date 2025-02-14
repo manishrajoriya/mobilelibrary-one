@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,26 +9,23 @@ import {
   FlatList,
   Modal,
   Alert,
-} from "react-native"
-import { useForm, Controller } from "react-hook-form"
-import { addLibrary, deleteLibrary, getLibraries, updateLibrary } from "@/firebase/functions"
-import { Ionicons } from "@expo/vector-icons"
-import { useLibrarySelection } from "@/hooks/useLibrarySelect" // Import the hook
-import  useStore  from "@/hooks/store"
+} from "react-native";
+import { useForm, Controller } from "react-hook-form";
+import { addLibrary, deleteLibrary, getLibraries, updateLibrary } from "@/firebase/functions";
+import { Ionicons } from "@expo/vector-icons";
+import { useLibrarySelection } from "@/hooks/useLibrarySelect"; // Import the hook
+import useStore from "@/hooks/store";
 
 type FormData = {
-  name: string
-  address: string
-  description: string
-}
-
-
+  name: string;
+  address: string;
+  description: string;
+};
 
 const LibraryForm = ({ onSubmit, onCancel, defaultValues, loading }: any) => {
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
-    defaultValues
-  })
-  
+    defaultValues,
+  });
 
   return (
     <View style={styles.formContainer}>
@@ -98,7 +95,7 @@ const LibraryForm = ({ onSubmit, onCancel, defaultValues, loading }: any) => {
         >
           <Text style={styles.buttonText}>Cancel</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={[styles.button, styles.submitButton]}
           onPress={handleSubmit(onSubmit)}
@@ -112,14 +109,11 @@ const LibraryForm = ({ onSubmit, onCancel, defaultValues, loading }: any) => {
         </TouchableOpacity>
       </View>
     </View>
-  )
-}
+  );
+};
 
 const LibraryItem = ({ item, isActive, onSelect, onEdit, onDelete }: any) => (
-
-
-
-  <TouchableOpacity 
+  <TouchableOpacity
     style={[styles.libraryCard, isActive && styles.activeLibraryCard]}
     onPress={() => onSelect(item.id)}
   >
@@ -128,78 +122,78 @@ const LibraryItem = ({ item, isActive, onSelect, onEdit, onDelete }: any) => (
       <Text style={styles.libraryAddress}>{item.address}</Text>
       <Text style={styles.libraryDescription}>{item.description}</Text>
     </View>
-    
+
     <View style={styles.actionButtons}>
       {isActive && <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />}
       <TouchableOpacity onPress={() => onEdit(item)}>
         <Ionicons name="create-outline" size={24} color="#4CAF50" />
       </TouchableOpacity>
-      
+
       <TouchableOpacity onPress={() => onDelete(item)}>
         <Ionicons name="trash-outline" size={24} color="#f44336" />
       </TouchableOpacity>
     </View>
   </TouchableOpacity>
-)
+);
 
 const AddLibraryScreen = () => {
-  const [selectedLibrary, setSelectedLibrary] = useState<any>(null)
-  const [showFormModal, setShowFormModal] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [selectedLibrary, setSelectedLibrary] = useState<any>(null);
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const currentUser = useStore((state: any) => state.currentUser)
+  const currentUser = useStore((state: any) => state.currentUser);
   // Use the hook for library selection
-  const { libraries, loading: librariesLoading, activeLibrary, handleLibrarySelect } = useLibrarySelection()
+  const { libraries, loading: librariesLoading, activeLibrary, handleLibrarySelect, refreshLibraries } = useLibrarySelection();
 
   const handleAdd = async (data: FormData) => {
-    setLoading(true)
+    setLoading(true);
     try {
-      await addLibrary({ data, currentUser })
-      await getLibraries({ currentUser: currentUser })
-      setShowFormModal(false)
+      await addLibrary({ data, currentUser });
+      await refreshLibraries(); // Refresh the list of libraries
+      setShowFormModal(false);
     } catch (error) {
-      Alert.alert("Error", "Failed to create library")
+      Alert.alert("Error", "Failed to create library");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleUpdate = async (data: FormData) => {
-    if (!selectedLibrary) return
-    setLoading(true)
+    if (!selectedLibrary) return;
+    setLoading(true);
     try {
-      await updateLibrary({ id: selectedLibrary.id, data })
-      await getLibraries({ currentUser })
-      setShowFormModal(false)
+      await updateLibrary({ id: selectedLibrary.id, data });
+      await refreshLibraries(); // Refresh the list of libraries
+      setShowFormModal(false);
     } catch (error) {
-      Alert.alert("Error", "Failed to update library")
+      Alert.alert("Error", "Failed to update library");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const confirmDelete = (library: any) => {
     Alert.alert(
       "Confirm Delete",
-      `Are you sure you want to delete ${library.name}?`,
+      `Are you sure you want to delete ${library.name}? All members will be removed from this Library `,
       [
         { text: "Cancel", style: "cancel" },
-        { text: "Delete", onPress: () => performDelete(library.id) }
+        { text: "Delete", onPress: () => performDelete(library.id) },
       ]
-    )
-  }
+    );
+  };
 
   const performDelete = async (id: string) => {
-    setLoading(true)
+    setLoading(true);
     try {
-      await deleteLibrary({ id })
-      await getLibraries({ currentUser })
+      await deleteLibrary({ id });
+      await refreshLibraries(); // Refresh the list of libraries
     } catch (error) {
-      Alert.alert("Error", "Failed to delete library")
+      Alert.alert("Error", "Failed to delete library");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <View style={styles.container}>
@@ -210,8 +204,8 @@ const AddLibraryScreen = () => {
           <TouchableOpacity
             style={styles.addButton}
             onPress={() => {
-              setSelectedLibrary(null)
-              setShowFormModal(true)
+              setSelectedLibrary(null);
+              setShowFormModal(true);
             }}
           >
             <Ionicons name="add-circle" size={24} color="white" />
@@ -224,8 +218,8 @@ const AddLibraryScreen = () => {
             isActive={activeLibrary?.id === item.id}
             onSelect={handleLibrarySelect}
             onEdit={(library: any) => {
-              setSelectedLibrary(library)
-              setShowFormModal(true)
+              setSelectedLibrary(library);
+              setShowFormModal(true);
             }}
             onDelete={confirmDelete}
           />
@@ -246,8 +240,8 @@ const AddLibraryScreen = () => {
         </View>
       </Modal>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -261,7 +255,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: 'rgba(0,0,0,0.1)'
+    backgroundColor: 'rgba(0,0,0,0.1)',
   },
   addButton: {
     flexDirection: 'row',
@@ -367,6 +361,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
-})
+});
 
-export default AddLibraryScreen
+export default AddLibraryScreen;

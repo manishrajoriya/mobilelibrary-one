@@ -17,7 +17,7 @@ export default function LoginScreen() {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setCurrentUser(user);
       if (user) {
-        router.push("/(tabs)");
+        router.replace("/(tabs)");
       }
     });
     return () => unsubscribe();

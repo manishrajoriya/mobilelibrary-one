@@ -55,10 +55,10 @@ const LogoutScreen = () => {
           <Text style={styles.buttonText}>Logout</Text>
         )}
       </TouchableOpacity>
+     
       <View style={styles.contactContainer}>
         <Text style={styles.contactText}>
-          You can contact us at: OneLibrary001@gmail.com
-          Contact Number: whatsapp: +91 9468737084
+          Ask for new features or bug reports at: OneLibrary001@gmail.com or +91 9468737084
         </Text>
       </View>
     </View>
