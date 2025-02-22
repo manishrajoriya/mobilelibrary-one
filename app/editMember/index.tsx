@@ -1,35 +1,25 @@
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Platform,
-  ActivityIndicator,
-  Image,
-} from "react-native"
-import { Controller } from "react-hook-form"
+import React, { useEffect, useState } from "react";
+import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator, Alert, Image, TouchableOpacity, ScrollView, Platform } from "react-native";
+import { useForm, Controller } from "react-hook-form";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { getAuth } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/utils/firebaseConfig";
+import { updateMember } from "@/firebase/functions";
+import Toast from "react-native-toast-message";
+import { useAddMemberForm } from "@/hooks/useAddMemberForm";
+import useStore from "@/hooks/store";
+import { pickImage, pickImageSource } from "@/component/member/ImageUpload";
+import { uploadImageToFirebase } from "@/firebase/helper";
+import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker"
-import { Picker } from "@react-native-picker/picker"
-import { addMember } from "@/firebase/functions"
-import Toast from "react-native-toast-message"
-import { useAddMemberForm } from "@/hooks/useAddMemberForm"
 
-import { pickImage, uploadImageToFirebase, pickImageSource } from "./ImageUpload"
-import type { FormData } from "@/types/MemberProfile"
-import useStore from "@/hooks/store"
-
-export const formatDate = (date: Date) => {
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  })
-}
-
-export default function AddMemberForm() {
-  const {
+const UpdateMemberScreen = () => {
+  const { id: memberId } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+ 
+   const {
     control,
     handleSubmit,
     setValue,
@@ -45,28 +35,58 @@ export default function AddMemberForm() {
   const currentUser = useStore((state: any) => state.currentUser)
   const activeLibrary = useStore((state: any) => state.activeLibrary)
 
-  const onSubmit = async (data: FormData) => {
+  useEffect(() => {
+    async function fetchMemberData() {
+      try {
+        const docRef = doc(db, "members", memberId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setValue("fullName", data.fullName || "");
+          setValue("contactNumber", data.contactNumber || "");
+          setValue("email", data.email || "");
+          setValue("totalAmount", data.totalAmount || "");
+          setValue("paidAmount", data.paidAmount || "");
+          setValue("discount", data.discount || "");
+          setValue("dueAmount", data.dueAmount || "");
+          setValue("address", data.address || "");
+          setValue("profileImage", data.profileImage || "");
+          setValue("document", data.document || "");
+          setValue("admissionDate", data.addmissionDate.toDate() || "");
+          setValue("expiryDate", data.expiryDate.toDate() || "");
+          setValue("plan", data.plan || "");
+
+        } else {
+          Alert.alert("Error", "Member not found");
+          router.back();
+        }
+      } catch (error) {
+        console.error("Error fetching member:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchMemberData();
+  }, [memberId]);
+
+  const onSubmit = async (formData: any) => {
     try {
-      await addMember({ data, currentUser, libraryId: activeLibrary.id })
-      Toast.show({
+      await updateMember({ memberId, data: formData });
+       Toast.show({
         type: "success",
         text1: "Member added successfully",
       })
-      // Reset form
-      Object.keys(data).forEach((key) => setValue(key as keyof FormData, ""))
-      setValue("admissionDate", new Date())
-      setValue("expiryDate", new Date())
-    } catch (error) {
-      console.error("Error adding member: ", error)
+      router.back();
+    } catch (error: any) {
       Toast.show({
         type: "error",
-        text1: "Failed to add member",
-        text2: "Please try again",
+        text1: error.message,
       })
     }
-  }
+  };
 
-  const handleImagePick = async (field: "profileImage" | "document") => {
+    const handleImagePick = async (field: "profileImage" | "document") => {
     try {
       const source = await pickImageSource()
       const uri = await pickImage(source)
@@ -82,11 +102,32 @@ export default function AddMemberForm() {
     }
   }
 
+const formatDate = (date: any) => {
+  if (date && typeof date.seconds === "number") {
+    date = new Date(date.seconds * 1000); // Convert Firestore timestamp to JavaScript Date
+  }
+
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
+    console.error("Invalid date:", date);
+    return "Invalid Date";
+  }
+
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+
+
   const watchProfileImage = watch("profileImage")
   const watchDocument = watch("document")
 
+  if (loading) return <ActivityIndicator size="large" color="#6B46C1" style={styles.loading} />;
+
   return (
-    <ScrollView style={styles.container}>
+   <ScrollView style={styles.container}>
       <View style={styles.formContainer}>
         {/* Name */}
         <Controller
@@ -373,13 +414,13 @@ export default function AddMemberForm() {
 
         {/* Submit Button */}
         <TouchableOpacity onPress={handleSubmit(onSubmit)} disabled={isLoading} style={styles.submitButton}>
-          <Text style={styles.submitButtonText}>Submit</Text>
+          <Text style={styles.submitButtonText}>Update Member</Text>
         </TouchableOpacity>
       </View>
       <Toast />
     </ScrollView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -518,5 +559,17 @@ const styles = StyleSheet.create({
   flex1: {
     flex: 1,
   },
+  loading: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  heading: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
+  },
 })
 
+export default UpdateMemberScreen;

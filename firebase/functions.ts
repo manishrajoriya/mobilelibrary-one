@@ -1,4 +1,3 @@
-// import firestore from '@react-native-firebase/firestore';
 
 
 import { collection, addDoc,getDoc, where, query, getDocs, startAfter,
@@ -13,11 +12,6 @@ import {getAuth, User, } from "firebase/auth"
 import { db } from "@/utils/firebaseConfig";
 
 
-
-// const {  user } = useAuth();
-// console.log(user);
-
-// Define the plan data type
 type PlanData = {
   name: string;
   description: string;
@@ -221,7 +215,6 @@ export async function addMember({currentUser, libraryId, data}: {currentUser: Us
 }
 
 
-
 export async function getMembers({ pageSize, lastVisible, currentUser, libraryId }: { pageSize: number, lastVisible: QueryDocumentSnapshot<DocumentData> | undefined, currentUser: any, libraryId: string }) {
   try {
     
@@ -387,32 +380,49 @@ export async function getLiveMembers({ pageSize, lastVisible, currentUser, libra
   }
 }
 
-export async function updateMember({ id, data }: { id: string, data: any }) {
+
+export async function updateMember({
+  memberId,
+  data,
+}: {
+  memberId: string;
+  data: Partial<{
+    fullName: string;
+    address: string;
+    contactNumber: string;
+    email: string;
+    admissionDate: string;
+    expiryDate: string;
+    profileImage: string;
+    document: string;
+    dueAmount: number;
+    totalAmount: number;
+    paidAmount: number;
+    discount: number;
+    planId: string;
+    plan: string;
+  }>;
+}) {
   try {
-    const memberRef = doc(db, 'members', id)
+    if (!memberId) {
+      throw new Error("Member ID is required for updating.");
+    }
+
+    const memberRef = doc(db, "members", memberId);
+
     await updateDoc(memberRef, {
-      fullName: data?.fullName,
-      address:  data?.address,
-      contactNumber: data?.contactNumber,
-      email: data?.email,
-      addmissionDate: data?.admissionDate,
-      expiryDate: data?.expiryDate,
-      seatNumber: data?.seatNumber,
-      profileImage: data?.profileImage,
-      document: data?.document,
-      dueAmount: data?.dueAmount,
-      totalAmount: data?.totalAmount,
-      paidAmount: data?.paidAmount,
-      planId: data?.planId,
-      plan: data?.plan,
-      updatedAt: new Date()
-    })
-    return id
+      ...data,
+      updatedAt: new Date(), // Update timestamp
+    });
+
+    console.log("Member updated successfully:", memberId);
+    return true;
   } catch (error: any) {
-    console.error('Unable to update member:', error.message);
-    throw error;
+    console.error("Error updating member:", error.message);
+    throw error; // Propagate error
   }
 }
+
 
 export async function deleteMember({ id, }: { id: string }) {
   try {

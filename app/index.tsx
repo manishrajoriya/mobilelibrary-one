@@ -13,9 +13,9 @@ export default function Index() {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        router.replace("/(tabs)"); // Navigate to main app
+        router.replace("/(tabs)"); 
       }else {
-        router.replace("/onbording"); // Navigate to onboarding
+        router.replace("/onbording"); 
       }
     });
 

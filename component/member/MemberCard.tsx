@@ -89,7 +89,7 @@ const MemberCard: React.FC<{ member: MemberDetails, onPress: () => void }> = Rea
           ))}
         </View>
 
-        {/* <ActionButtons /> */}
+        {/* <ActionButtons memberId={member.id} /> */}
       </TouchableOpacity>
     )
   },

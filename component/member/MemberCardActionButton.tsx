@@ -2,6 +2,7 @@ import React from "react";
 import { FlatList, StyleSheet } from "react-native";
 import { ActionButton } from "../ActionBtnUi"; 
 import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 interface ActionItem {
   icon: keyof typeof Feather.glyphMap;
@@ -9,29 +10,35 @@ interface ActionItem {
   onPress: () => void;
 }
 
-export const ActionButtons: React.FC = React.memo(() => {
+interface ActionButtonsProps {
+  memberId: string;  // Accepting memberId as a prop
+}
+
+export const ActionButtons: React.FC<ActionButtonsProps> = React.memo(({ memberId }) => {
+  const router = useRouter();
   const actionData: ActionItem[] = [
-    { icon: "edit-2", label: "Edit", onPress: handleEdit },
-    { icon: "plus", label: "Add Pay", onPress: handleAddPay },
-    { icon: "refresh-ccw", label: "Renew", onPress: handleRenew },
-    { icon: "user", label: "Profile", onPress: handleProfile },
+    { icon: "edit-2", label: "Edit", onPress: () => handleEdit(memberId) },
+    { icon: "plus", label: "Add Pay", onPress: () => handleAddPay(memberId) },
+    { icon: "refresh-ccw", label: "Renew", onPress: () => handleRenew(memberId) },
+    { icon: "user", label: "Profile", onPress: () => handleProfile(memberId) },
   ];
 
-  // Define handlers
-  function handleEdit() {
-    console.log("Edit pressed");
+  // Define handlers with memberId
+  function handleEdit(id: string) {
+    router.push(`/editMember?id=${id}`);
+    console.log(`Edit pressed for Member ID: ${id}`);
   }
 
-  function handleAddPay() {
-    console.log("Add Pay pressed");
+  function handleAddPay(id: string) {
+    console.log(`Add Pay pressed for Member ID: ${id}`);
   }
 
-  function handleRenew() {
-    console.log("Renew pressed");
+  function handleRenew(id: string) {
+    console.log(`Renew pressed for Member ID: ${id}`);
   }
 
-  function handleProfile() {
-    console.log("Profile pressed");
+  function handleProfile(id: string) {
+    console.log(`Profile pressed for Member ID: ${id}`);
   }
 
   return (

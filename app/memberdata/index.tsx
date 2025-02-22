@@ -18,6 +18,7 @@ import { getMemberById, fetchSeatByMemberId, fetchAttendanceByMemberId, deleteMe
 import Toast from "react-native-toast-message"
 import WhatsAppModal from "@/component/member/WhatsappMessage"
 import { generateAndShareInvoice } from "@/firebase/helper"
+import UpdateMember from "@/component/member/UpdateMember"
 
 
 interface MemberDetails {
@@ -145,6 +146,11 @@ const MemberDetails: React.FC = () => {
       })
     }
   }
+
+  const handleMemberUpdate = () => {
+    router.push(`/editMember?id=${memberId}`)
+  }
+
 
   const handleSendWhatsAppMessage = (message: string) => {
     const whatsappUrl = `whatsapp://send?phone=${91}${member?.contactNumber}&text=${encodeURIComponent(message)}`
@@ -291,13 +297,19 @@ const MemberDetails: React.FC = () => {
 
       {/* Action Buttons */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.gymPlanButton} onPress={handleMemberDelete}>
-          <Text style={styles.gymPlanButtonText}>Delete Member</Text>
+        <TouchableOpacity style={styles.addOnPlanButton} onPress={handleMemberDelete}>
+          <Text style={styles.addOnPlanButtonText}>Delete Member</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.addOnPlanButton} onPress={() => setIsWhatsAppModalVisible(true)}>
           <Text style={styles.addOnPlanButtonText}>Message</Text>
         </TouchableOpacity>
       </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.gymPlanButton} onPress={handleMemberUpdate}>
+          <Text style={styles.gymPlanButtonText}>Update/Add Plan</Text>
+        </TouchableOpacity>
+        </View>
 
       {/* Plan Details */}
       <View style={styles.card}>
@@ -342,7 +354,7 @@ const MemberDetails: React.FC = () => {
             <TouchableOpacity onPress={handlePrintInvoice}>
               <Text style={[styles.tableCell, styles.printButton]}>Print</Text>
             </TouchableOpacity>
-          </View>
+          </View> 
         </View>
       </View>
       <Modal
